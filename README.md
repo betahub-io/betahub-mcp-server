@@ -6,39 +6,12 @@ A Model Context Protocol (MCP) server that integrates BetaHub's feedback managem
 
 The BetaHub MCP Server enables AI assistants to interact with BetaHub projects and feature requests through standardized MCP tools. This allows you to manage feedback, view feature requests, and interact with your BetaHub projects directly from AI-powered development environments.
 
-## Features
+## Capabilities
 
-- 🔐 **Secure Authentication** - Support for Personal Access Tokens and Project Auth Tokens
-- 📋 **Project Management** - List and access all your BetaHub projects
-- 💡 **Feature Request Access** - Browse, sort, and paginate through feature requests
-- 🤖 **MCP Protocol Compliance** - Full compatibility with MCP-enabled AI assistants
-
-## Available Tools
-
-### `listProjects`
-Lists all BetaHub projects accessible to the authenticated user.
-
-**Parameters:** None
-
-**Returns:**
-- Project ID, name, and description
-- Member count and creation date
-- Direct links to BetaHub project pages
-
-### `listSuggestions`
-Lists feature requests from a specific BetaHub project.
-
-**Parameters:**
-- `projectId` (required): The project ID to fetch feature requests from
-- `sort` (optional): Sort order - `top`, `new`, `all`, `moderation`, `rejected`, `muted`, `duplicates` (default: `top`)
-- `page` (optional): Page number for pagination (default: 1)
-- `limit` (optional): Number of items per page, max 25 (default: 25)
-
-**Returns:**
-- Feature request details (title, description, status)
-- Vote counts and user voting status
-- User information and timestamps
-- Pagination metadata
+- **List BetaHub projects** - Access all projects available to your account
+- **Browse feature requests** - View, sort, and paginate through suggestions in any project
+- **Filter by status** - Access requests in moderation, rejected, muted, or duplicate states
+- **Full MCP compliance** - Works with any MCP-enabled AI assistant
 
 ## Installation
 
@@ -46,21 +19,14 @@ Lists feature requests from a specific BetaHub project.
 
 - Node.js v18 or higher
 - A BetaHub account with API access
-- A BetaHub Personal Access Token or Project Auth Token
+- A BetaHub Personal Access Token
 
 ### Getting Your BetaHub Token
 
-1. **Personal Access Token** (Recommended):
-   - Go to your BetaHub profile settings
-   - Navigate to "Personal Access Tokens"
-   - Create a new token with appropriate permissions
-   - Token format: `pat-{64-character-hex}`
-
-2. **Project Auth Token**:
-   - Go to your project settings in BetaHub
-   - Navigate to "Auth Tokens"
-   - Create a new token with specific project permissions
-   - Token format: `tkn-{64-character-hex}`
+1. Go to your BetaHub profile settings
+2. Navigate to "Personal Access Tokens"
+3. Create a new token with appropriate permissions
+4. Token format: `pat-{64-character-hex}`
 
 ## Quick Start
 
@@ -210,19 +176,6 @@ claude mcp add-json betahub-dev '{
 }'
 ```
 
-### Project Structure
-
-```
-betahub-mcp-server/
-├── src/
-│   └── index.ts          # Main server implementation
-├── build/                # Compiled JavaScript (generated)
-├── package.json          # Dependencies and scripts
-├── tsconfig.json         # TypeScript configuration
-├── CLAUDE.md            # Development documentation
-└── README.md            # This file
-```
-
 ### Adding New Tools
 
 When adding new MCP tools, ensure you provide:
@@ -248,8 +201,6 @@ server.registerTool("newTool", {
 
 ### Connection Failed
 
-If you see "Failed to connect" in `claude mcp list`:
-
 1. Verify the package is installed:
    ```bash
    npm list -g betahub-mcp-server
@@ -261,16 +212,12 @@ If you see "Failed to connect" in `claude mcp list`:
    npx betahub-mcp-server
    ```
 
-3. Check MCP logs (Claude Code):
-   ```bash
-   # macOS/Linux
-   ls ~/Library/Caches/claude-cli-nodejs/*/mcp-logs-betahub/
-   ```
+3. Check the server output for any error messages
 
 ### Authentication Errors
 
 - Verify your token hasn't expired
-- Ensure you're using the correct token format (`pat-` or `tkn-`)
+- Ensure you're using the correct token format (`pat-`)
 - Check you have appropriate permissions for the requested resources
 - Try generating a new token from BetaHub
 
@@ -281,8 +228,8 @@ If you need a specific version:
 # Install specific version
 npm install -g betahub-mcp-server@0.0.2
 
-# Use specific version with Claude Code
-claude mcp add betahub npx betahub-mcp-server@0.0.2 -- --token=pat-your-token-here
+# Use specific version with your MCP client
+npx betahub-mcp-server@0.0.2 --token=pat-your-token-here
 ```
 
 ## License
