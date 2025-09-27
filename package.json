@@ -1,0 +1,28 @@
+{
+  "name": "betahub-mcp-server",
+  "version": "0.0.2",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "betahub-mcp-server": "./build/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && chmod +x ./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "keywords": ["mcp", "betahub", "model-context-protocol", "feature-requests", "project-management"],
+  "author": "Piotr Korzuszek",
+  "license": "ISC",
+  "description": "Model Context Protocol server for BetaHub - list projects and feature requests",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "typescript": "^5.9.2"
+  }
+}
