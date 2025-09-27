@@ -1,67 +1,69 @@
 import { vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
+import { createTokenInfo, createProject, createFeatureRequest } from './helpers/factories.js';
 
 // Mock server for HTTP requests
 export const server = setupServer(
-  // Default handlers for common endpoints
+  // Auth verification endpoint
   http.post('https://app.betahub.io/auth/verify', () => {
-    return HttpResponse.json({
+    return HttpResponse.json(createTokenInfo({
       valid: true,
-      tokenType: 'personal_access_token',
+      token_type: 'personal_access_token',
       user: { name: 'Test User', email: 'test@example.com' },
-      expires: '2024-12-31T23:59:59Z'
-    });
+      expires_at: '2025-12-31T23:59:59Z'
+    }));
   }),
 
-  http.get('https://app.betahub.io/api/projects', () => {
+  // Projects endpoint
+  http.get('https://app.betahub.io/projects.json', () => {
     return HttpResponse.json({
-      code: 200,
-      data: {
-        projects: [
-          {
-            id: 'pr-test-123',
-            name: 'Test Project',
-            description: 'A test project for unit tests',
-            membersCount: 5,
-            createdAt: new Date().toISOString()
-          }
-        ]
-      }
+      projects: [
+        createProject({
+          id: 'pr-test-123',
+          name: 'Test Project',
+          description: 'A test project for unit tests',
+          member_count: 5
+        }),
+        createProject({
+          id: 'pr-test-456',
+          name: 'Another Project',
+          member_count: 10
+        })
+      ]
     });
   }),
 
-  http.get('https://app.betahub.io/api/projects/:projectId/suggestions', ({ params, request }) => {
+  // Feature requests endpoint
+  http.get('https://app.betahub.io/projects/:projectId/feature_requests.json', ({ params, request }) => {
     const url = new URL(request.url);
     const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '25';
+    const sort = url.searchParams.get('sort') || 'top';
+    const projectId = params.projectId as string;
 
     return HttpResponse.json({
-      code: 200,
-      data: {
-        suggestions: [
-          {
-            id: 's-test-456',
-            title: 'Test Feature Request',
-            description: 'This is a test feature request',
-            status: 'pending',
-            upvotes: 10,
-            downvotes: 2,
-            commentsCount: 5,
-            user: {
-              name: 'Test User',
-              email: 'user@test.com'
-            },
-            createdAt: new Date().toISOString()
-          }
-        ],
-        meta: {
-          page: parseInt(page),
-          totalPages: 3,
-          totalCount: 60,
-          limit: parseInt(limit)
-        }
-      }
+      feature_requests: [
+        createFeatureRequest({
+          id: 'fr-test-456',
+          title: 'Test Feature Request',
+          description: 'This is a test feature request',
+          status: 'pending',
+          votes: 10
+        }),
+        createFeatureRequest({
+          id: 'fr-test-789',
+          title: 'Another Feature',
+          votes: 5
+        })
+      ],
+      pagination: {
+        current_page: parseInt(page),
+        total_pages: 3,
+        total_count: 60,
+        per_page: 25
+      },
+      sort: sort,
+      project_id: projectId
     });
   })
 );
