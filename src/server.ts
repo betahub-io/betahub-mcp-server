@@ -20,6 +20,9 @@ export function createServer(): McpServer {
         listSuggestions: {
           description: tools.listSuggestions.definition.description,
         },
+        searchSuggestions: {
+          description: tools.searchSuggestions.definition.description,
+        },
       },
     },
   });
@@ -45,6 +48,18 @@ export function createServer(): McpServer {
         throw new AuthenticationError('Authentication required');
       }
       return tools.listSuggestions.handler(input as any);
+    }
+  );
+
+  // Register searchSuggestions tool
+  server.registerTool(
+    'searchSuggestions',
+    tools.searchSuggestions.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.searchSuggestions.handler(input as any);
     }
   );
 

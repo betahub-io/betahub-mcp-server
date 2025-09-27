@@ -63,3 +63,11 @@ export interface TokenInfo {
 }
 
 export type SortOrder = 'top' | 'new' | 'all' | 'moderation' | 'rejected' | 'muted' | 'duplicates';
+
+export type FeatureRequestSearchResponse =
+  | string[]  // Array of titles (default response)
+  | FeatureRequest  // Single feature request (scoped_id search)
+  | {  // Full search response with feature requests
+      feature_requests: FeatureRequest[];
+      has_more?: boolean;
+    };

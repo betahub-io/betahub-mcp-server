@@ -20,3 +20,11 @@ export interface ListSuggestionsInput {
   page?: number;
   limit?: number;
 }
+
+export interface SearchSuggestionsInput {
+  projectId: string;
+  query?: string;
+  skipIds?: string;
+  partial?: boolean;
+  scopedId?: string;
+}
