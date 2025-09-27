@@ -263,6 +263,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 For issues and questions:
-- GitHub Issues: [your-repo-url]/issues
-- BetaHub Support: https://app.betahub.io/support
+- GitHub Issues: https://github.com/betahub-io/betahub-mcp-server/issues
+- BetaHub Support: https://app.betahub.io/feedback
 - NPM Package: https://www.npmjs.com/package/betahub-mcp-server
