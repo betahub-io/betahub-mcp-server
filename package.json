@@ -7,13 +7,22 @@
     "betahub-mcp-server": "./build/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
     "build": "tsc && chmod +x ./build/index.js"
   },
   "files": [
     "build"
   ],
-  "keywords": ["mcp", "betahub", "model-context-protocol", "feature-requests", "project-management"],
+  "keywords": [
+    "mcp",
+    "betahub",
+    "model-context-protocol",
+    "feature-requests",
+    "project-management"
+  ],
   "author": "Piotr Korzuszek",
   "license": "ISC",
   "description": "Model Context Protocol server for BetaHub - list projects and feature requests",
@@ -23,6 +32,9 @@
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
-    "typescript": "^5.9.2"
+    "@vitest/ui": "^3.2.4",
+    "msw": "^2.11.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

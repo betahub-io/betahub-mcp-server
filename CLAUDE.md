@@ -136,10 +136,36 @@ npm run build
 ```
 
 ### Testing
+
+The project uses Vitest as its testing framework with MSW for HTTP mocking.
+
 ```bash
-# Currently no tests are configured
-npm test  # Will exit with error - tests need to be implemented
+# Run tests once
+npm test
+
+# Watch mode for development
+npm run test:watch
+
+# Interactive UI for debugging tests
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
 ```
+
+#### Test Structure
+Tests are organized in `src/__tests__/`:
+- `auth.test.ts` - Authentication and token validation tests
+- `tools.test.ts` - MCP tool functionality and input validation tests
+- `integration.test.ts` - End-to-end API integration tests
+- `setup.ts` - MSW mock server configuration and utilities
+
+#### Adding New Tests
+When adding new functionality:
+1. Create corresponding test files in `src/__tests__/`
+2. Use MSW handlers in `setup.ts` for mocking API responses
+3. Tests are excluded from the TypeScript build process
+4. All tests run in Node.js environment with ES modules
 
 ### Running the Server
 ```bash
