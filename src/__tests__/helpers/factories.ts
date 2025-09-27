@@ -2,7 +2,7 @@
  * Factory functions for generating test data
  */
 
-import type { Project, FeatureRequest, User, TokenInfo, Pagination } from '../../types/betahub.js';
+import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue } from '../../types/betahub.js';
 
 export function createUser(overrides?: Partial<User>): User {
   return {
@@ -94,5 +94,52 @@ export function createFeatureRequestsResponse(count = 5, page = 1) {
     }),
     sort: 'top',
     project_id: 'pr-test-123',
+  };
+}
+
+export function createIssue(overrides?: Partial<Issue>): Issue {
+  return {
+    id: 'issue-test-789',
+    title: 'Test Issue',
+    description: 'This is a test issue',
+    status: 'new',
+    priority: 'medium',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-02T00:00:00Z',
+    score: 5,
+    steps_to_reproduce: [
+      { step: 'Open the app' },
+      { step: 'Click on login' },
+      { step: 'App crashes' }
+    ],
+    assigned_to: {
+      id: 'user-456',
+      name: 'Developer'
+    },
+    reported_by: {
+      id: 'user-789',
+      name: 'Reporter'
+    },
+    potential_duplicate: null,
+    url: 'https://app.betahub.io/issues/issue-test-789',
+    ...overrides,
+  };
+}
+
+export function createIssuesResponse(count = 5, page = 1) {
+  const perPage = 20;
+  return {
+    issues: Array.from({ length: count }, (_, i) =>
+      createIssue({
+        id: `issue-test-${i}`,
+        title: `Issue ${i}`
+      })
+    ),
+    pagination: createPagination({
+      current_page: page,
+      total_pages: Math.ceil(count / perPage),
+      total_count: count,
+      per_page: perPage,
+    }),
   };
 }

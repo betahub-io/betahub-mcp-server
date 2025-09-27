@@ -30,6 +30,9 @@ This is a Model Context Protocol (MCP) server for BetaHub. MCP is a protocol tha
 **Tools:**
 - `src/tools/projects.ts` - Lists BetaHub projects
 - `src/tools/suggestions.ts` - Lists feature requests/suggestions
+- `src/tools/search.ts` - Searches feature requests/suggestions
+- `src/tools/issues.ts` - Lists issues/bug reports
+- `src/tools/searchIssues.ts` - Searches issues/bug reports
 - `src/tools/index.ts` - Tool registry and exports
 
 **Types:**
@@ -80,6 +83,50 @@ Lists feature requests (suggestions) from a specific BetaHub project.
 - Pagination metadata
 - Direct links to BetaHub feature request pages
 
+#### 3. `searchSuggestions`
+Searches for feature requests within a specific BetaHub project.
+
+**Parameters:**
+- `projectId` (required): The project ID to search in
+- `query` (optional): Search query to match against titles and descriptions
+- `scopedId` (optional): Find a specific feature request by its scoped ID
+- `skipIds` (optional): Comma-separated list of IDs to exclude
+- `partial` (optional): Return limited results for autocomplete (max 4)
+
+**Response:** Returns search results in different formats based on the request
+
+#### 4. `listIssues`
+Lists issues (bug reports) from a specific BetaHub project.
+
+**Parameters:**
+- `projectId` (required): The project ID to fetch issues from
+- `status` (optional): Filter by status - `new`, `in_progress`, `resolved`, `closed`
+- `priority` (optional): Filter by priority - `low`, `medium`, `high`, `critical`
+- `page` (optional): Page number for pagination (default: 1)
+- `perPage` (optional): Number of items per page, max 100 (default: 20)
+
+**Response:** Returns issue information including:
+- Issue details (title, description, status, priority)
+- Steps to reproduce and severity score
+- Assignment and reporter information
+- Pagination metadata
+- Direct links to BetaHub issue pages
+
+#### 5. `searchIssues`
+Searches for issues (bug reports) within a specific BetaHub project.
+
+**Parameters:**
+- `projectId` (required): The project ID to search in
+- `query` (optional): Search query to match against titles and descriptions
+- `scopedId` (optional): Find a specific issue by its scoped ID (e.g., "123" or "g-456")
+- `skipIds` (optional): Comma-separated list of issue IDs to exclude
+- `partial` (optional): Return limited results for autocomplete (max 4)
+
+**Response:** Returns search results in different formats:
+- Array of titles for simple search
+- Full issue objects when partial=true
+- Single issue when searching by scopedId
+
 ### Usage Examples
 
 #### Example 1: List all accessible projects
@@ -109,6 +156,35 @@ listSuggestions({
 })
 ```
 
+#### Example 4: List issues from a project
+```bash
+# Get high priority issues that are in progress
+listIssues({
+  "projectId": "pr-0690627851",
+  "status": "in_progress",
+  "priority": "high"
+})
+```
+
+#### Example 5: Search for issues
+```bash
+# Search for issues related to crashes
+searchIssues({
+  "projectId": "pr-0690627851",
+  "query": "crash",
+  "partial": true
+})
+```
+
+#### Example 6: Get a specific issue by ID
+```bash
+# Get issue by its scoped ID
+searchIssues({
+  "projectId": "pr-0690627851",
+  "scopedId": "g-123"
+})
+```
+
 ### Testing the Server
 
 You can test the server's functionality by accessing projects like:
@@ -116,7 +192,7 @@ You can test the server's functionality by accessing projects like:
 - `pr-5287510306` - Demo Game: VoidBreach
 - `pr-5622767318` - Scythe Digital Edition
 
-The server has been successfully tested with real BetaHub data and can retrieve both project listings and feature requests from authenticated projects.
+The server has been successfully tested with real BetaHub data and can retrieve project listings, feature requests, and issues from authenticated projects.
 
 ## Authentication Setup
 

@@ -23,6 +23,12 @@ export function createServer(): McpServer {
         searchSuggestions: {
           description: tools.searchSuggestions.definition.description,
         },
+        listIssues: {
+          description: tools.listIssues.definition.description,
+        },
+        searchIssues: {
+          description: tools.searchIssues.definition.description,
+        },
       },
     },
   });
@@ -60,6 +66,30 @@ export function createServer(): McpServer {
         throw new AuthenticationError('Authentication required');
       }
       return tools.searchSuggestions.handler(input as any);
+    }
+  );
+
+  // Register listIssues tool
+  server.registerTool(
+    'listIssues',
+    tools.listIssues.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.listIssues.handler(input as any);
+    }
+  );
+
+  // Register searchIssues tool
+  server.registerTool(
+    'searchIssues',
+    tools.searchIssues.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.searchIssues.handler(input as any);
     }
   );
 

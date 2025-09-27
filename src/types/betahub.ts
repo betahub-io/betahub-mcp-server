@@ -71,3 +71,41 @@ export type FeatureRequestSearchResponse =
       feature_requests: FeatureRequest[];
       has_more?: boolean;
     };
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  status: 'new' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  created_at: string;
+  updated_at: string;
+  score?: number;
+  steps_to_reproduce?: Array<{
+    step: string;
+  }>;
+  assigned_to?: {
+    id: string;
+    name: string;
+  };
+  reported_by?: {
+    id: string;
+    name: string;
+  };
+  potential_duplicate?: any;
+  url: string;
+  token?: string;
+}
+
+export interface IssuesResponse {
+  issues: Issue[];
+  pagination: Pagination;
+}
+
+export type IssueSearchResponse =
+  | string[]  // Array of titles (default response)
+  | Issue  // Single issue (scoped_id search)
+  | {  // Full search response with issues
+      issues: Issue[];
+      has_more?: boolean;
+    };
