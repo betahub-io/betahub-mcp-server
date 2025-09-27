@@ -10,7 +10,11 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 
 - **List BetaHub projects** - Access all projects available to your account
 - **Browse feature requests** - View, sort, and paginate through suggestions in any project
-- **Filter by status** - Access requests in moderation, rejected, muted, or duplicate states
+- **Search feature requests** - Search by text query or find specific requests by ID
+- **Browse issues/bugs** - View, filter, and paginate through bug reports in any project
+- **Search issues/bugs** - Search by text query or find specific issues by ID
+- **Filter by status** - Access requests and issues in various states (new, in_progress, resolved, etc.)
+- **Filter by priority** - View issues by priority level (low, medium, high, critical)
 - **Full MCP compliance** - Works with any MCP-enabled AI assistant
 
 ## Installation
@@ -129,11 +133,27 @@ For any MCP-compatible client:
 
 Once configured, you can interact with BetaHub through your AI assistant:
 
+### Projects
 ```
 "Show me all my BetaHub projects"
+```
+
+### Feature Requests (Suggestions)
+```
 "List the top feature requests from project pr-0690627851"
 "Get the newest feature requests from the BetaHub project, page 2"
 "Show me feature requests that are under moderation"
+"Search for feature requests about 'dark mode' in project pr-0690627851"
+"Find feature request fr-123 in the project"
+```
+
+### Issues (Bug Reports)
+```
+"List all critical bugs in project pr-0690627851"
+"Show me issues with status 'in_progress' from the project"
+"Search for bugs related to 'crash' in project pr-0690627851"
+"Find issue g-456 in the project"
+"Get high priority issues that are not resolved yet"
 ```
 
 ## Development
