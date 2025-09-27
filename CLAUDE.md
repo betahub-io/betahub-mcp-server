@@ -305,3 +305,4 @@ The existing `makeGetRequest` function provides a foundation for BetaHub API cal
 - Requires Node.js v18+ (per MCP SDK requirements)
 - Uses ES modules (type: "module" in package.json)
 - Configured for modern JavaScript features (ES2022)
+- Use claude command line to test the mcp server. Check claude --help how to use it. The server should be added to local claude instance. If not, you need to add it, but you'd need a PAT. Find PAT in .env or if not available, ask the user for it.
