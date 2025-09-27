@@ -14,7 +14,8 @@
     "build": "tsc && chmod +x ./build/index.js"
   },
   "files": [
-    "build"
+    "build",
+    "README.md"
   ],
   "keywords": [
     "mcp",
