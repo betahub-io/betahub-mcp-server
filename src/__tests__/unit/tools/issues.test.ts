@@ -41,8 +41,10 @@ describe('Issues Tool', () => {
 
       expect(() => schema.parse({ projectId: 'pr-123', status: 'new' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'in_progress' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', status: 'needs_more_info' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'resolved' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'closed' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', status: 'wont_fix' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'invalid' })).toThrow();
     });
 

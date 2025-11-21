@@ -7,6 +7,7 @@ import { listSuggestions, listSuggestionsDefinition, listSuggestionsInputSchema 
 import { searchSuggestions, searchSuggestionsDefinition, searchSuggestionsInputSchema } from './search.js';
 import { listIssues, listIssuesDefinition, listIssuesInputSchema } from './issues.js';
 import { searchIssues, searchIssuesDefinition, searchIssuesInputSchema } from './searchIssues.js';
+import { listReleases, listReleasesDefinition, listReleasesInputSchema } from './releases.js';
 
 export const tools = {
   listProjects: {
@@ -33,6 +34,11 @@ export const tools = {
     handler: searchIssues,
     inputSchema: searchIssuesInputSchema,
   },
+  listReleases: {
+    definition: listReleasesDefinition,
+    handler: listReleases,
+    inputSchema: listReleasesInputSchema,
+  },
 };
 
-export { listProjects, listSuggestions, searchSuggestions, listIssues, searchIssues };
+export { listProjects, listSuggestions, searchSuggestions, listIssues, searchIssues, listReleases };

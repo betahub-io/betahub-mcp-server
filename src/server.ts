@@ -29,6 +29,9 @@ export function createServer(): McpServer {
         searchIssues: {
           description: tools.searchIssues.definition.description,
         },
+        listReleases: {
+          description: tools.listReleases.definition.description,
+        },
       },
     },
   });
@@ -90,6 +93,18 @@ export function createServer(): McpServer {
         throw new AuthenticationError('Authentication required');
       }
       return tools.searchIssues.handler(input as any);
+    }
+  );
+
+  // Register listReleases tool
+  server.registerTool(
+    'listReleases',
+    tools.listReleases.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.listReleases.handler(input as any);
     }
   );
 

@@ -76,7 +76,7 @@ export interface Issue {
   id: string;
   title: string;
   description: string;
-  status: 'new' | 'in_progress' | 'resolved' | 'closed';
+  status: 'new' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
   priority: 'low' | 'medium' | 'high' | 'critical';
   created_at: string;
   updated_at: string;
@@ -109,3 +109,25 @@ export type IssueSearchResponse =
       issues: Issue[];
       has_more?: boolean;
     };
+
+export interface DownloadLink {
+  platform: string;
+  url: string;
+}
+
+export interface Release {
+  id: number;
+  project_id: number;
+  label: string;
+  summary: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+  download_link: string | null;
+  dynamically_created: boolean;
+}
+
+export interface ReleasesResponse {
+  releases: Release[];
+  total_count?: number;
+}

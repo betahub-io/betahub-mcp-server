@@ -11,7 +11,7 @@ import type { ListIssuesInput, ToolResponse } from '../types/mcp.js';
 export const listIssuesInputSchema = {
   projectId: z.string().describe('The project ID to fetch issues from'),
   status: z
-    .enum(['new', 'in_progress', 'resolved', 'closed'])
+    .enum(['new', 'in_progress', 'needs_more_info', 'resolved', 'closed', 'wont_fix'])
     .optional()
     .describe('Filter issues by status'),
   priority: z

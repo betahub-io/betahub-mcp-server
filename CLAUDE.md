@@ -100,7 +100,7 @@ Lists issues (bug reports) from a specific BetaHub project.
 
 **Parameters:**
 - `projectId` (required): The project ID to fetch issues from
-- `status` (optional): Filter by status - `new`, `in_progress`, `resolved`, `closed`
+- `status` (optional): Filter by status - `new`, `in_progress`, `needs_more_info`, `resolved`, `closed`, `wont_fix`
 - `priority` (optional): Filter by priority - `low`, `medium`, `high`, `critical`
 - `page` (optional): Page number for pagination (default: 1)
 - `perPage` (optional): Number of items per page, max 100 (default: 20)
@@ -126,6 +126,19 @@ Searches for issues (bug reports) within a specific BetaHub project.
 - Array of titles for simple search
 - Full issue objects when partial=true
 - Single issue when searching by scopedId
+
+#### 6. `listReleases`
+Lists all releases for a specific BetaHub project.
+
+**Parameters:**
+- `projectId` (required): The project ID to fetch releases from
+
+**Response:** Returns release information including:
+- Release details (id, label, summary, description)
+- Creation and update timestamps
+- Download links for each platform (platform, url)
+- Attachments count
+- Direct links to BetaHub release pages
 
 ### Usage Examples
 
@@ -185,6 +198,14 @@ searchIssues({
 })
 ```
 
+#### Example 7: List releases from a project
+```bash
+# Get all releases for a project
+listReleases({
+  "projectId": "pr-0690627851"
+})
+```
+
 ### Testing the Server
 
 You can test the server's functionality by accessing projects like:
@@ -192,7 +213,7 @@ You can test the server's functionality by accessing projects like:
 - `pr-5287510306` - Demo Game: VoidBreach
 - `pr-5622767318` - Scythe Digital Edition
 
-The server has been successfully tested with real BetaHub data and can retrieve project listings, feature requests, and issues from authenticated projects.
+The server has been successfully tested with real BetaHub data and can retrieve project listings, feature requests, issues, and releases from authenticated projects.
 
 ## Authentication Setup
 
@@ -261,6 +282,7 @@ Tests are organized in `src/__tests__/` with clear separation:
 - `api/client.test.ts` - API client tests
 - `tools/projects.test.ts` - Projects tool tests
 - `tools/suggestions.test.ts` - Suggestions tool tests
+- `tools/releases.test.ts` - Releases tool tests
 
 **Integration Tests** (`src/__tests__/integration/`):
 - `server.test.ts` - MCP server initialization tests
