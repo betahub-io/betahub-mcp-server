@@ -22,6 +22,38 @@ export const listSuggestionsInputSchema = {
     .max(25)
     .optional()
     .describe('Number of items per page (max 25, default: 25)'),
+  status: z
+    .enum(['pending', 'approved', 'rejected', 'in_progress', 'completed', 'duplicate'])
+    .optional()
+    .describe('Filter feature requests by status'),
+  createdAfter: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter feature requests created after this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  createdBefore: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter feature requests created before this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  updatedAfter: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter feature requests updated after this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  updatedBefore: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter feature requests updated before this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
 };
 
 export const listSuggestionsDefinition = {
@@ -35,6 +67,11 @@ export async function listSuggestions({
   sort = 'top',
   page = 1,
   limit = 25,
+  status,
+  createdAfter,
+  createdBefore,
+  updatedAfter,
+  updatedBefore,
 }: ListSuggestionsInput): Promise<ToolResponse> {
   const client = getApiClient();
 
@@ -42,6 +79,11 @@ export async function listSuggestions({
     const params = new URLSearchParams();
     if (sort !== 'top') params.append('sort', sort);
     if (page !== 1) params.append('page', page.toString());
+    if (status) params.append('status', status);
+    if (createdAfter) params.append('created_after', createdAfter);
+    if (createdBefore) params.append('created_before', createdBefore);
+    if (updatedAfter) params.append('updated_after', updatedAfter);
+    if (updatedBefore) params.append('updated_before', updatedBefore);
 
     const queryString = params.toString();
     const endpoint = `projects/${projectId}/feature_requests.json${
@@ -83,6 +125,13 @@ export async function listSuggestions({
               per_page: Math.min(limit, response.pagination?.per_page || 25),
             },
             sort: sort,
+            filters: {
+              status,
+              created_after: createdAfter,
+              created_before: createdBefore,
+              updated_after: updatedAfter,
+              updated_before: updatedBefore,
+            },
             project_id: projectId,
           },
           null,

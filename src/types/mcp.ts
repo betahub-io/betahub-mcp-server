@@ -19,6 +19,11 @@ export interface ListSuggestionsInput {
   sort?: 'top' | 'new' | 'all' | 'moderation' | 'rejected' | 'muted' | 'duplicates';
   page?: number;
   limit?: number;
+  status?: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'completed' | 'duplicate';
+  createdAfter?: string;
+  createdBefore?: string;
+  updatedAfter?: string;
+  updatedBefore?: string;
 }
 
 export interface SearchSuggestionsInput {
@@ -35,6 +40,10 @@ export interface ListIssuesInput {
   priority?: 'low' | 'medium' | 'high' | 'critical';
   page?: number;
   perPage?: number;
+  createdAfter?: string;
+  createdBefore?: string;
+  updatedAfter?: string;
+  updatedBefore?: string;
 }
 
 export interface SearchIssuesInput {

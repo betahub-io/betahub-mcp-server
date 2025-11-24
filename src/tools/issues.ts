@@ -26,6 +26,34 @@ export const listIssuesInputSchema = {
     .max(100)
     .optional()
     .describe('Number of issues per page (max 100, default: 20)'),
+  createdAfter: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter issues created after this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  createdBefore: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter issues created before this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  updatedAfter: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter issues updated after this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  updatedBefore: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), {
+      message: "Must be a valid date string in ISO 8601 format (e.g., '2024-01-01' or '2024-01-01T10:00:00Z')",
+    })
+    .optional()
+    .describe('Filter issues updated before this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
 };
 
 export const listIssuesDefinition = {
@@ -40,6 +68,10 @@ export async function listIssues({
   priority,
   page = 1,
   perPage = 20,
+  createdAfter,
+  createdBefore,
+  updatedAfter,
+  updatedBefore,
 }: ListIssuesInput): Promise<ToolResponse> {
   const client = getApiClient();
 
@@ -49,6 +81,10 @@ export async function listIssues({
     if (perPage !== 20) params.append('per_page', perPage.toString());
     if (status) params.append('status', status);
     if (priority) params.append('priority', priority);
+    if (createdAfter) params.append('created_after', createdAfter);
+    if (createdBefore) params.append('created_before', createdBefore);
+    if (updatedAfter) params.append('updated_after', updatedAfter);
+    if (updatedBefore) params.append('updated_before', updatedBefore);
 
     const queryString = params.toString();
     const endpoint = `projects/${projectId}/issues.json${
@@ -88,6 +124,10 @@ export async function listIssues({
             filters: {
               status,
               priority,
+              created_after: createdAfter,
+              created_before: createdBefore,
+              updated_after: updatedAfter,
+              updated_before: updatedBefore,
             },
             project_id: projectId,
           },
