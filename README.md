@@ -13,8 +13,12 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Search feature requests** - Search by text query or find specific requests by ID
 - **Browse issues/bugs** - View, filter, and paginate through bug reports in any project
 - **Search issues/bugs** - Search by text query or find specific issues by ID
+- **List issue tags** - Discover available tags for categorizing issues
+- **Browse releases** - View project releases with download links
 - **Filter by status** - Access requests and issues in various states (new, in_progress, resolved, etc.)
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
+- **Filter by tags** - Filter issues using tag IDs
+- **Filter by date** - Filter by creation or update date ranges
 - **Full MCP compliance** - Works with any MCP-enabled AI assistant
 
 ## Installation
@@ -154,6 +158,33 @@ Once configured, you can interact with BetaHub through your AI assistant:
 "Search for bugs related to 'crash' in project pr-0690627851"
 "Find issue g-456 in the project"
 "Get high priority issues that are not resolved yet"
+```
+
+### Issue Tags
+```
+"List all issue tags in project pr-0690627851"
+"What tags are available for categorizing bugs?"
+"Show me the tag hierarchy for this project"
+```
+
+### Filtering by Tags
+```
+"List issues tagged with 'Performance' (tag ID 1953)"
+"Show me all bugs with tags 1957 or 1958 (Crash or Freeze)"
+```
+
+### Releases
+```
+"List all releases for project pr-0690627851"
+"What versions have been released?"
+"Show me the latest release with download links"
+```
+
+### Date Filtering
+```
+"Show me issues created after 2025-01-01"
+"List feature requests updated in the last week"
+"Get bugs created between January and March 2025"
 ```
 
 ## Development
