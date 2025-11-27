@@ -44,6 +44,11 @@ export interface ListIssuesInput {
   createdBefore?: string;
   updatedAfter?: string;
   updatedBefore?: string;
+  tagIds?: string;
+}
+
+export interface ListIssueTagsInput {
+  projectId: string;
 }
 
 export interface SearchIssuesInput {

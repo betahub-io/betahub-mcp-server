@@ -131,3 +131,17 @@ export interface ReleasesResponse {
   releases: Release[];
   total_count?: number;
 }
+
+export interface IssueTag {
+  id: number;
+  name: string;
+  color: string;
+  description: string | null;
+  parent_tag_id: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IssueTagsResponse {
+  tags: IssueTag[];
+}

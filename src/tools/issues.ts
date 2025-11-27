@@ -54,6 +54,10 @@ export const listIssuesInputSchema = {
     })
     .optional()
     .describe('Filter issues updated before this date (ISO 8601 format, e.g., "2024-01-01" or "2024-01-01T10:00:00Z")'),
+  tagIds: z
+    .string()
+    .optional()
+    .describe('Filter issues by tag IDs (comma-separated, e.g., "1,2,3"). Only issues with at least one of these tags will be returned. Use the listIssueTags tool to discover available tag IDs for a project.'),
 };
 
 export const listIssuesDefinition = {
@@ -72,6 +76,7 @@ export async function listIssues({
   createdBefore,
   updatedAfter,
   updatedBefore,
+  tagIds,
 }: ListIssuesInput): Promise<ToolResponse> {
   const client = getApiClient();
 
@@ -85,6 +90,7 @@ export async function listIssues({
     if (createdBefore) params.append('created_before', createdBefore);
     if (updatedAfter) params.append('updated_after', updatedAfter);
     if (updatedBefore) params.append('updated_before', updatedBefore);
+    if (tagIds) params.append('tag_ids', tagIds);
 
     const queryString = params.toString();
     const endpoint = `projects/${projectId}/issues.json${
@@ -128,6 +134,7 @@ export async function listIssues({
               created_before: createdBefore,
               updated_after: updatedAfter,
               updated_before: updatedBefore,
+              tag_ids: tagIds,
             },
             project_id: projectId,
           },

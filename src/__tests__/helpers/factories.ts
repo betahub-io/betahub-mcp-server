@@ -2,7 +2,7 @@
  * Factory functions for generating test data
  */
 
-import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink } from '../../types/betahub.js';
+import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink, IssueTag } from '../../types/betahub.js';
 
 export function createUser(overrides?: Partial<User>): User {
   return {
@@ -164,5 +164,29 @@ export function createRelease(overrides?: Partial<Release>): Release {
     download_link: 'https://example.com/download/game-v1.0.0.zip',
     dynamically_created: false,
     ...overrides,
+  };
+}
+
+export function createIssueTag(overrides?: Partial<IssueTag>): IssueTag {
+  return {
+    id: 1,
+    name: 'Test Tag',
+    color: '#FF0000',
+    description: null,
+    parent_tag_id: null,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-02T00:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createIssueTagsResponse(count = 3) {
+  return {
+    tags: Array.from({ length: count }, (_, i) =>
+      createIssueTag({
+        id: i + 1,
+        name: `Tag ${i + 1}`
+      })
+    ),
   };
 }

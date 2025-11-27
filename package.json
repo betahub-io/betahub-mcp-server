@@ -1,6 +1,6 @@
 {
   "name": "betahub-mcp-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -22,11 +22,13 @@
     "betahub",
     "model-context-protocol",
     "feature-requests",
-    "project-management"
+    "project-management",
+    "issue-tracking",
+    "bug-reports"
   ],
   "author": "Piotr Korzuszek",
   "license": "ISC",
-  "description": "Model Context Protocol server for BetaHub - list projects and feature requests",
+  "description": "Model Context Protocol server for BetaHub - manage projects, feature requests, issues, and releases",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/betahub-io/betahub-mcp-server.git"

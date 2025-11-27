@@ -32,6 +32,9 @@ export function createServer(): McpServer {
         listReleases: {
           description: tools.listReleases.definition.description,
         },
+        listIssueTags: {
+          description: tools.listIssueTags.definition.description,
+        },
       },
     },
   });
@@ -105,6 +108,18 @@ export function createServer(): McpServer {
         throw new AuthenticationError('Authentication required');
       }
       return tools.listReleases.handler(input as any);
+    }
+  );
+
+  // Register listIssueTags tool
+  server.registerTool(
+    'listIssueTags',
+    tools.listIssueTags.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.listIssueTags.handler(input as any);
     }
   );
 
