@@ -30,7 +30,6 @@ export interface SearchSuggestionsInput {
   projectId: string;
   query?: string;
   skipIds?: string;
-  partial?: boolean;
   scopedId?: string;
 }
 
@@ -55,7 +54,6 @@ export interface SearchIssuesInput {
   projectId: string;
   query?: string;
   skipIds?: string;
-  partial?: boolean;
   scopedId?: string;
 }
 

@@ -47,12 +47,6 @@ describe('Search Tool', () => {
       expect(() => schema.parse({ projectId: 'pr-123', scopedId: 'fr-456' })).not.toThrow();
     });
 
-    it('should accept partial boolean parameter', () => {
-      const schema = z.object(searchSuggestionsInputSchema);
-
-      expect(() => schema.parse({ projectId: 'pr-123', query: 'test', partial: true })).not.toThrow();
-      expect(() => schema.parse({ projectId: 'pr-123', query: 'test', partial: false })).not.toThrow();
-    });
   });
 
   describe('searchSuggestions', () => {
@@ -62,9 +56,22 @@ describe('Search Tool', () => {
       );
     });
 
-    it('should return title array for simple search', async () => {
-      const mockTitles = ['Dark mode support', 'Light theme', 'Color customization'];
-      mockClient.get.mockResolvedValue(mockTitles);
+    it('should return full feature requests for search', async () => {
+      const mockResponse = {
+        feature_requests: [
+          { id: '1', title: 'Dark mode support', votes: 5 },
+          { id: '2', title: 'Light theme', votes: 3 },
+          { id: '3', title: 'Color customization', votes: 2 }
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 3,
+          per_page: 25
+        },
+        sort: 'top'
+      };
+      mockClient.get.mockResolvedValue(mockResponse);
 
       const result = await searchSuggestions({
         projectId: 'pr-123',
@@ -74,30 +81,41 @@ describe('Search Tool', () => {
       expect(mockClient.get).toHaveBeenCalledWith('projects/pr-123/feature_requests/search.json?query=theme');
 
       const content = JSON.parse(result.content[0].text);
-      expect(content.titles).toEqual(mockTitles);
-      expect(content.type).toBe('title_search');
+      expect(content.feature_requests).toHaveLength(3);
+      expect(content.type).toBe('search');
       expect(content.project_id).toBe('pr-123');
       expect(content.query).toBe('theme');
+      expect(content.pagination).toEqual(mockResponse.pagination);
     });
 
-    it('should handle partial search with skip_ids', async () => {
-      const mockTitles = ['Feature 1', 'Feature 2'];
-      mockClient.get.mockResolvedValue(mockTitles);
+    it('should handle search with skip_ids', async () => {
+      const mockResponse = {
+        feature_requests: [
+          { id: '1', title: 'Feature 1', votes: 5 },
+          { id: '2', title: 'Feature 2', votes: 3 }
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 2,
+          per_page: 25
+        },
+        sort: 'top'
+      };
+      mockClient.get.mockResolvedValue(mockResponse);
 
       const result = await searchSuggestions({
         projectId: 'pr-123',
         query: 'feature',
-        partial: true,
         skipIds: 'id1,id2,id3'
       });
 
       expect(mockClient.get).toHaveBeenCalledWith(
-        'projects/pr-123/feature_requests/search.json?query=feature&skip_ids=id1%2Cid2%2Cid3&partial=true'
+        'projects/pr-123/feature_requests/search.json?query=feature&skip_ids=id1%2Cid2%2Cid3'
       );
 
       const content = JSON.parse(result.content[0].text);
-      expect(content.titles).toEqual(mockTitles);
-      expect(content.partial).toBe(true);
+      expect(content.feature_requests).toHaveLength(2);
     });
 
     it('should return single feature request for scoped_id search', async () => {
@@ -125,26 +143,31 @@ describe('Search Tool', () => {
       expect(content.scoped_id).toBe('fr-456');
     });
 
-    it('should return full feature requests array when response has feature_requests property', async () => {
+    it('should return full feature requests array with pagination', async () => {
       const mockResponse = {
         feature_requests: [
           { id: '1', title: 'Feature 1', votes: 10 },
           { id: '2', title: 'Feature 2', votes: 5 }
         ],
-        has_more: true
+        pagination: {
+          current_page: 1,
+          total_pages: 2,
+          total_count: 10,
+          per_page: 25
+        },
+        sort: 'top'
       };
       mockClient.get.mockResolvedValue(mockResponse);
 
       const result = await searchSuggestions({
         projectId: 'pr-123',
-        query: 'feature',
-        partial: true
+        query: 'feature'
       });
 
       const content = JSON.parse(result.content[0].text);
       expect(content.feature_requests).toEqual(mockResponse.feature_requests);
-      expect(content.has_more).toBe(true);
-      expect(content.type).toBe('full_search');
+      expect(content.pagination.total_pages).toBe(2);
+      expect(content.type).toBe('search');
     });
 
     it('should handle 404 error for project not found', async () => {

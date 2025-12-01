@@ -50,12 +50,6 @@ describe('SearchIssues Tool', () => {
       expect(result.scopedId).toBe('g-456');
     });
 
-    it('should accept optional partial flag', () => {
-      const schema = z.object(searchIssuesInputSchema);
-
-      const result = schema.parse({ projectId: 'pr-123', partial: true });
-      expect(result.partial).toBe(true);
-    });
 
     it('should accept optional skipIds', () => {
       const schema = z.object(searchIssuesInputSchema);
@@ -72,7 +66,19 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should search issues with query', async () => {
-      const response = ['App crashes on login', 'Memory leak issue', 'UI freeze bug'];
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', title: 'App crashes on login' }),
+          createIssue({ id: 'g-2', title: 'Memory leak issue' }),
+          createIssue({ id: 'g-3', title: 'UI freeze bug' })
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 3,
+          per_page: 25
+        }
+      };
       mockClient.get.mockResolvedValue(response);
 
       const result = await searchIssues({
@@ -83,8 +89,9 @@ describe('SearchIssues Tool', () => {
       expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues/search.json?query=crash');
 
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.type).toBe('title_search');
-      expect(parsed.titles).toEqual(response);
+      expect(parsed.type).toBe('search');
+      expect(parsed.issues).toHaveLength(3);
+      expect(parsed.pagination).toEqual(response.pagination);
       expect(parsed.query).toBe('crash');
       expect(parsed.project_id).toBe('pr-test');
     });
@@ -106,7 +113,7 @@ describe('SearchIssues Tool', () => {
       expect(parsed.scoped_id).toBe('g-123');
     });
 
-    it('should handle partial search with full results', async () => {
+    it('should handle search with pagination', async () => {
       const response = {
         issues: [
           createIssue({ id: 'g-1', title: 'Issue 1' }),
@@ -114,27 +121,42 @@ describe('SearchIssues Tool', () => {
           createIssue({ id: 'g-3', title: 'Issue 3' }),
           createIssue({ id: 'g-4', title: 'Issue 4' })
         ],
-        has_more: true
+        pagination: {
+          current_page: 1,
+          total_pages: 3,
+          total_count: 12,
+          per_page: 4
+        }
       };
       mockClient.get.mockResolvedValue(response);
 
       const result = await searchIssues({
         projectId: 'pr-test',
-        query: 'bug',
-        partial: true
+        query: 'bug'
       });
 
-      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues/search.json?query=bug&partial=true');
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues/search.json?query=bug');
 
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.type).toBe('full_search');
+      expect(parsed.type).toBe('search');
       expect(parsed.issues).toHaveLength(4);
-      expect(parsed.has_more).toBe(true);
-      expect(parsed.partial).toBe(true);
+      expect(parsed.pagination.total_pages).toBe(3);
+      expect(parsed.pagination.total_count).toBe(12);
     });
 
     it('should include skipIds parameter', async () => {
-      const response = ['Issue 1', 'Issue 2'];
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', title: 'Issue 1' }),
+          createIssue({ id: 'g-2', title: 'Issue 2' })
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 2,
+          per_page: 25
+        }
+      };
       mockClient.get.mockResolvedValue(response);
 
       await searchIssues({
@@ -147,17 +169,24 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should combine multiple parameters', async () => {
-      const response = ['Issue 1'];
+      const response = {
+        issues: [createIssue({ id: 'g-1', title: 'Issue 1' })],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
+      };
       mockClient.get.mockResolvedValue(response);
 
       await searchIssues({
         projectId: 'pr-test',
         query: 'memory',
-        skipIds: 'g-skip',
-        partial: true
+        skipIds: 'g-skip'
       });
 
-      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues/search.json?query=memory&skip_ids=g-skip&partial=true');
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues/search.json?query=memory&skip_ids=g-skip');
     });
 
     it('should handle 404 for scopedId not found', async () => {
@@ -197,7 +226,16 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should handle empty search results', async () => {
-      mockClient.get.mockResolvedValue([]);
+      const response = {
+        issues: [],
+        pagination: {
+          current_page: 1,
+          total_pages: 0,
+          total_count: 0,
+          per_page: 25
+        }
+      };
+      mockClient.get.mockResolvedValue(response);
 
       const result = await searchIssues({
         projectId: 'pr-test',
@@ -205,29 +243,34 @@ describe('SearchIssues Tool', () => {
       });
 
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.type).toBe('title_search');
-      expect(parsed.titles).toEqual([]);
+      expect(parsed.type).toBe('search');
+      expect(parsed.issues).toEqual([]);
+      expect(parsed.pagination.total_count).toBe(0);
     });
 
-    it('should handle full search with no more results', async () => {
+    it('should handle search with single result', async () => {
       const response = {
         issues: [
           createIssue({ id: 'g-1', title: 'Single Issue' })
         ],
-        has_more: false
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
       };
       mockClient.get.mockResolvedValue(response);
 
       const result = await searchIssues({
         projectId: 'pr-test',
-        query: 'single',
-        partial: true
+        query: 'single'
       });
 
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.type).toBe('full_search');
+      expect(parsed.type).toBe('search');
       expect(parsed.issues).toHaveLength(1);
-      expect(parsed.has_more).toBe(false);
+      expect(parsed.pagination.total_count).toBe(1);
     });
   });
 });

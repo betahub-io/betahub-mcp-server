@@ -91,9 +91,8 @@ Searches for feature requests within a specific BetaHub project.
 - `query` (optional): Search query to match against titles and descriptions
 - `scopedId` (optional): Find a specific feature request by its scoped ID
 - `skipIds` (optional): Comma-separated list of IDs to exclude
-- `partial` (optional): Return limited results for autocomplete (max 4)
 
-**Response:** Returns search results in different formats based on the request
+**Response:** Returns full feature request objects with pagination metadata, or a single feature request when searching by scopedId
 
 #### 4. `listIssues`
 Lists issues (bug reports) from a specific BetaHub project.
@@ -120,12 +119,8 @@ Searches for issues (bug reports) within a specific BetaHub project.
 - `query` (optional): Search query to match against titles and descriptions
 - `scopedId` (optional): Find a specific issue by its scoped ID (e.g., "123" or "g-456")
 - `skipIds` (optional): Comma-separated list of issue IDs to exclude
-- `partial` (optional): Return limited results for autocomplete (max 4)
 
-**Response:** Returns search results in different formats:
-- Array of titles for simple search
-- Full issue objects when partial=true
-- Single issue when searching by scopedId
+**Response:** Returns full issue objects with pagination metadata, or a single issue when searching by scopedId
 
 #### 6. `listReleases`
 Lists all releases for a specific BetaHub project.
@@ -184,8 +179,7 @@ listIssues({
 # Search for issues related to crashes
 searchIssues({
   "projectId": "pr-0690627851",
-  "query": "crash",
-  "partial": true
+  "query": "crash"
 })
 ```
 

@@ -12,7 +12,6 @@ export const searchIssuesInputSchema = {
   projectId: z.string().describe('The project ID to search issues in'),
   query: z.string().optional().describe('The search query string to match against issue titles and descriptions'),
   skipIds: z.string().optional().describe('Comma-separated list of issue IDs to exclude from results'),
-  partial: z.boolean().optional().describe('When set to true, returns limited results optimized for autocomplete (max 4 results)'),
   scopedId: z.string().optional().describe('Instead of searching, find a specific issue by its scoped ID (e.g., "123" or "g-456")'),
 };
 
@@ -26,7 +25,6 @@ export async function searchIssues({
   projectId,
   query,
   skipIds,
-  partial = false,
   scopedId,
 }: SearchIssuesInput): Promise<ToolResponse> {
   const client = getApiClient();
@@ -41,7 +39,6 @@ export async function searchIssues({
     if (query) params.append('query', query);
     if (scopedId) params.append('scoped_id', scopedId);
     if (skipIds) params.append('skip_ids', skipIds);
-    if (partial) params.append('partial', 'true');
 
     const queryString = params.toString();
     const endpoint = `projects/${projectId}/issues/search.json${
@@ -53,24 +50,14 @@ export async function searchIssues({
     // Handle different response formats
     let result: any;
 
-    if (Array.isArray(response)) {
-      // Array of titles (simple search result)
-      result = {
-        titles: response,
-        type: 'title_search',
-        project_id: projectId,
-        query,
-        partial,
-      };
-    } else if ('issues' in response) {
-      // Full issue objects (partial=true with HTML format)
+    if ('issues' in response) {
+      // Full search response - same format as index with pagination
       result = {
         issues: response.issues,
-        has_more: response.has_more || false,
-        type: 'full_search',
+        pagination: response.pagination,
+        type: 'search',
         project_id: projectId,
         query,
-        partial,
       };
     } else {
       // Single issue (scoped_id search)

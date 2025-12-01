@@ -65,12 +65,8 @@ export interface TokenInfo {
 export type SortOrder = 'top' | 'new' | 'all' | 'moderation' | 'rejected' | 'muted' | 'duplicates';
 
 export type FeatureRequestSearchResponse =
-  | string[]  // Array of titles (default response)
-  | FeatureRequest  // Single feature request (scoped_id search)
-  | {  // Full search response with feature requests
-      feature_requests: FeatureRequest[];
-      has_more?: boolean;
-    };
+  | FeatureRequestsResponse  // Full search response (query search) - same format as index
+  | FeatureRequest;  // Single feature request (scoped_id search)
 
 export interface Issue {
   id: string;
@@ -103,12 +99,8 @@ export interface IssuesResponse {
 }
 
 export type IssueSearchResponse =
-  | string[]  // Array of titles (default response)
-  | Issue  // Single issue (scoped_id search)
-  | {  // Full search response with issues
-      issues: Issue[];
-      has_more?: boolean;
-    };
+  | IssuesResponse  // Full search response (query search) - same format as index
+  | Issue;  // Single issue (scoped_id search)
 
 export interface DownloadLink {
   platform: string;
