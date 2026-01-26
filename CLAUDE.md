@@ -99,7 +99,7 @@ Lists issues (bug reports) from a specific BetaHub project.
 
 **Parameters:**
 - `projectId` (required): The project ID to fetch issues from
-- `status` (optional): Filter by status - `new`, `in_progress`, `needs_more_info`, `resolved`, `closed`, `wont_fix`
+- `status` (optional): Filter by status - `open`, `in_progress`, `needs_more_info`, `resolved`, `closed`, `wont_fix`
 - `priority` (optional): Filter by priority - `low`, `medium`, `high`, `critical`
 - `page` (optional): Page number for pagination (default: 1)
 - `perPage` (optional): Number of items per page, max 100 (default: 20)

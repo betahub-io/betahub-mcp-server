@@ -102,7 +102,7 @@ export function createIssue(overrides?: Partial<Issue>): Issue {
     id: 'issue-test-789',
     title: 'Test Issue',
     description: 'This is a test issue',
-    status: 'new',
+    status: 'open',
     priority: 'medium',
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-02T00:00:00Z',

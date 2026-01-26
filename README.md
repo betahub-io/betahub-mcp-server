@@ -15,7 +15,7 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Search issues/bugs** - Search by text query or find specific issues by ID
 - **List issue tags** - Discover available tags for categorizing issues
 - **Browse releases** - View project releases with download links
-- **Filter by status** - Access requests and issues in various states (new, in_progress, resolved, etc.)
+- **Filter by status** - Access requests and issues in various states (open, in_progress, resolved, etc.)
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
 - **Filter by tags** - Filter issues using tag IDs
 - **Filter by date** - Filter by creation or update date ranges

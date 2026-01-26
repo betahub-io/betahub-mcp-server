@@ -72,7 +72,7 @@ export interface Issue {
   id: string;
   title: string;
   description: string;
-  status: 'new' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
+  status: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
   priority: 'low' | 'medium' | 'high' | 'critical';
   created_at: string;
   updated_at: string;

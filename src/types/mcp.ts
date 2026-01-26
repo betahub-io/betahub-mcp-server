@@ -35,7 +35,7 @@ export interface SearchSuggestionsInput {
 
 export interface ListIssuesInput {
   projectId: string;
-  status?: 'new' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
+  status?: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
   priority?: 'low' | 'medium' | 'high' | 'critical';
   page?: number;
   perPage?: number;

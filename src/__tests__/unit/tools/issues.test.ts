@@ -39,7 +39,7 @@ describe('Issues Tool', () => {
     it('should validate status enum values', () => {
       const schema = z.object(listIssuesInputSchema);
 
-      expect(() => schema.parse({ projectId: 'pr-123', status: 'new' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', status: 'open' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'in_progress' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'needs_more_info' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'resolved' })).not.toThrow();
@@ -133,13 +133,13 @@ describe('Issues Tool', () => {
 
       await listIssues({
         projectId: 'pr-test',
-        status: 'new',
+        status: 'open',
         priority: 'critical',
         page: 3,
         perPage: 30
       });
 
-      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?page=3&per_page=30&status=new&priority=critical');
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?page=3&per_page=30&status=open&priority=critical');
     });
 
     it('should handle 404 errors as NotFoundError', async () => {
