@@ -13,6 +13,7 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Search feature requests** - Search by text query or find specific requests by ID
 - **Browse issues/bugs** - View, filter, and paginate through bug reports in any project
 - **Search issues/bugs** - Search by text query or find specific issues by ID
+- **Find similar issues** - AI-powered semantic search to find duplicate or related issues (recommended for duplicate detection)
 - **List issue tags** - Discover available tags for categorizing issues
 - **Browse releases** - View project releases with download links
 - **Filter by status** - Access requests and issues in various states (open, in_progress, resolved, etc.)

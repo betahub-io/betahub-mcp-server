@@ -122,7 +122,22 @@ Searches for issues (bug reports) within a specific BetaHub project.
 
 **Response:** Returns full issue objects with pagination metadata, or a single issue when searching by scopedId
 
-#### 6. `listReleases`
+#### 6. `findSimilarIssues`
+Find similar or duplicate issues using AI-powered vector similarity search. **This is the PRIMARY and RECOMMENDED method for finding duplicate issues** - it uses semantic similarity rather than keyword matching, making it much more accurate at detecting duplicates even when they use different wording.
+
+**Parameters:**
+- `projectId` (required): The project ID containing the issue
+- `issueId` (required): The issue ID (or scoped ID like "g-123") to find similar issues for
+- `limit` (optional): Maximum number of similar issues to return (1-50, default: 10)
+
+**Response:** Returns similar issues with:
+- Issue ID, title, and URL
+- Similarity score (higher = more similar)
+- Recommendation to combine with `searchIssues` for comprehensive results
+
+**Best Practice:** For comprehensive duplicate detection, use both `findSimilarIssues` (semantic similarity) and `searchIssues` (keyword matching) together.
+
+#### 7. `listReleases`
 Lists all releases for a specific BetaHub project.
 
 **Parameters:**
@@ -192,7 +207,17 @@ searchIssues({
 })
 ```
 
-#### Example 7: List releases from a project
+#### Example 7: Find similar/duplicate issues (RECOMMENDED for duplicates)
+```bash
+# Find issues similar to a specific issue using AI-powered semantic search
+findSimilarIssues({
+  "projectId": "pr-0690627851",
+  "issueId": "g-123",
+  "limit": 15
+})
+```
+
+#### Example 8: List releases from a project
 ```bash
 # Get all releases for a project
 listReleases({

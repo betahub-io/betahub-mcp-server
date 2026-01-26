@@ -60,3 +60,9 @@ export interface SearchIssuesInput {
 export interface ListReleasesInput {
   projectId: string;
 }
+
+export interface FindSimilarIssuesInput {
+  projectId: string;
+  issueId: string;
+  limit?: number;
+}

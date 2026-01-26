@@ -35,6 +35,9 @@ export function createServer(): McpServer {
         listIssueTags: {
           description: tools.listIssueTags.definition.description,
         },
+        findSimilarIssues: {
+          description: tools.findSimilarIssues.definition.description,
+        },
       },
     },
   });
@@ -120,6 +123,18 @@ export function createServer(): McpServer {
         throw new AuthenticationError('Authentication required');
       }
       return tools.listIssueTags.handler(input as any);
+    }
+  );
+
+  // Register findSimilarIssues tool
+  server.registerTool(
+    'findSimilarIssues',
+    tools.findSimilarIssues.definition,
+    async (input) => {
+      if (!isAuthenticated()) {
+        throw new AuthenticationError('Authentication required');
+      }
+      return tools.findSimilarIssues.handler(input as any);
     }
   );
 

@@ -137,3 +137,14 @@ export interface IssueTag {
 export interface IssueTagsResponse {
   tags: IssueTag[];
 }
+
+export interface SimilarIssue {
+  id: string;
+  title: string;
+  url: string;
+  score: number;
+}
+
+export interface FindSimilarIssuesResponse {
+  issues: SimilarIssue[];
+}

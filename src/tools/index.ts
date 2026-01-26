@@ -9,6 +9,7 @@ import { listIssues, listIssuesDefinition, listIssuesInputSchema } from './issue
 import { listIssueTags, listIssueTagsDefinition, listIssueTagsInputSchema } from './issueTags.js';
 import { searchIssues, searchIssuesDefinition, searchIssuesInputSchema } from './searchIssues.js';
 import { listReleases, listReleasesDefinition, listReleasesInputSchema } from './releases.js';
+import { findSimilarIssues, findSimilarIssuesDefinition, findSimilarIssuesInputSchema } from './findSimilarIssues.js';
 
 export const tools = {
   listProjects: {
@@ -45,6 +46,11 @@ export const tools = {
     handler: listReleases,
     inputSchema: listReleasesInputSchema,
   },
+  findSimilarIssues: {
+    definition: findSimilarIssuesDefinition,
+    handler: findSimilarIssues,
+    inputSchema: findSimilarIssuesInputSchema,
+  },
 };
 
-export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases };
+export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues };
