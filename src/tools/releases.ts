@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { config } from '../config.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { Release, ReleasesResponse } from '../types/betahub.js';
@@ -19,8 +19,8 @@ export const listReleasesDefinition = {
   inputSchema: listReleasesInputSchema,
 };
 
-export async function listReleases({ projectId }: ListReleasesInput): Promise<ToolResponse> {
-  const client = getApiClient();
+export async function listReleases({ projectId }: ListReleasesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
+  const client = apiClient || getApiClient();
 
   try {
     const endpoint = `projects/${projectId}/releases.json`;

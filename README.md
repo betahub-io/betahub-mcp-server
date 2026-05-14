@@ -249,6 +249,55 @@ server.registerTool("newTool", {
 });
 ```
 
+## AWS Lambda Deployment
+
+You can deploy the BetaHub MCP server as a hosted endpoint on AWS Lambda, so users don't need to install anything locally.
+
+### Prerequisites
+
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+- An ACM certificate for your custom domain (must be in the same region as the API)
+- A Route53 hosted zone for the domain (optional — you can configure DNS manually)
+
+### Build and Deploy
+
+```bash
+# Build the Lambda bundle
+npm run build:lambda
+
+# Deploy with SAM (first time — guided)
+sam deploy --guided
+
+# Subsequent deployments
+sam deploy
+```
+
+SAM will prompt you for:
+- **DomainName** — your custom domain (e.g., `mcp.betahub.io`)
+- **CertificateArn** — the ARN of your ACM certificate
+- **HostedZoneId** — your Route53 hosted zone ID (leave empty to skip automatic DNS)
+
+### How It Works
+
+The Lambda deployment uses the MCP Streamable HTTP transport in stateless mode:
+- Each request creates a fresh MCP server instance
+- Authentication is per-request via the `Authorization` header (no global token)
+- Responses are pure JSON (no SSE streaming)
+- The bundled Lambda is a single ~760KB file with zero external dependencies
+
+### Connecting MCP Clients
+
+MCP clients connect to the hosted endpoint by providing their BetaHub token in the `Authorization` header:
+
+```
+POST https://mcp.betahub.io/mcp
+Authorization: Bearer pat-your-token-here
+Accept: application/json, text/event-stream
+Content-Type: application/json
+```
+
+The server validates tokens by forwarding them to the BetaHub API — if the token is invalid, the first tool call will return an authentication error.
+
 ## Troubleshooting
 
 ### Connection Failed

@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { FeatureRequestsResponse } from '../types/betahub.js';
 import type { ListSuggestionsInput, ToolResponse } from '../types/mcp.js';
@@ -72,8 +72,8 @@ export async function listSuggestions({
   createdBefore,
   updatedAfter,
   updatedBefore,
-}: ListSuggestionsInput): Promise<ToolResponse> {
-  const client = getApiClient();
+}: ListSuggestionsInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
+  const client = apiClient || getApiClient();
 
   try {
     const params = new URLSearchParams();

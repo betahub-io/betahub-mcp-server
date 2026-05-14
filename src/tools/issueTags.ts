@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { IssueTag, IssueTagsResponse } from '../types/betahub.js';
 import type { ToolResponse, ListIssueTagsInput } from '../types/mcp.js';
@@ -21,8 +21,8 @@ export const listIssueTagsDefinition = {
 
 export async function listIssueTags({
   projectId,
-}: ListIssueTagsInput): Promise<ToolResponse> {
-  const client = getApiClient();
+}: ListIssueTagsInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
+  const client = apiClient || getApiClient();
 
   try {
     const endpoint = `projects/${projectId}/issue_tags.json`;

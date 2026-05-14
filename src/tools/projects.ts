@@ -2,7 +2,7 @@
  * Projects tool implementation for BetaHub MCP Server
  */
 
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { config } from '../config.js';
 import type { Project, ProjectsResponse } from '../types/betahub.js';
 import type { ListProjectsInput, ToolResponse } from '../types/mcp.js';
@@ -13,11 +13,11 @@ export const listProjectsDefinition = {
   inputSchema: {},
 };
 
-export async function listProjects(_input?: ListProjectsInput): Promise<ToolResponse> {
-  const client = getApiClient();
+export async function listProjects(_input?: ListProjectsInput, client?: BetaHubApiClient): Promise<ToolResponse> {
+  const apiClient = client || getApiClient();
 
   try {
-    const response = await client.get<ProjectsResponse | Project[]>('projects.json');
+    const response = await apiClient.get<ProjectsResponse | Project[]>('projects.json');
 
     const projects = Array.isArray(response)
       ? response

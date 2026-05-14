@@ -1,12 +1,21 @@
-/**
- * MCP Server factory for BetaHub
- */
-
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { config } from './config.js';
 import { tools } from './tools/index.js';
 import { isAuthenticated } from './lib/auth.js';
+import { createApiClient, type BetaHubApiClient } from './api/client.js';
 import { AuthenticationError } from './errors.js';
+
+function getClientFromExtra(extra: { authInfo?: { token: string } }): BetaHubApiClient | undefined {
+  const token = extra.authInfo?.token;
+  if (token) return createApiClient(token);
+  return undefined;
+}
+
+function requireAuth(extra: { authInfo?: { token: string } }): void {
+  if (!extra.authInfo?.token && !isAuthenticated()) {
+    throw new AuthenticationError('Authentication required');
+  }
+}
 
 export function createServer(): McpServer {
   const server = new McpServer({
@@ -42,99 +51,75 @@ export function createServer(): McpServer {
     },
   });
 
-  // Register listProjects tool
   server.registerTool(
     'listProjects',
     tools.listProjects.definition,
-    async () => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.listProjects.handler();
+    async (_args: any, extra: any) => {
+      requireAuth(extra);
+      return tools.listProjects.handler(undefined, getClientFromExtra(extra));
     }
   );
 
-  // Register listSuggestions tool
   server.registerTool(
     'listSuggestions',
     tools.listSuggestions.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.listSuggestions.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.listSuggestions.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register searchSuggestions tool
   server.registerTool(
     'searchSuggestions',
     tools.searchSuggestions.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.searchSuggestions.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.searchSuggestions.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register listIssues tool
   server.registerTool(
     'listIssues',
     tools.listIssues.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.listIssues.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.listIssues.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register searchIssues tool
   server.registerTool(
     'searchIssues',
     tools.searchIssues.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.searchIssues.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.searchIssues.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register listReleases tool
   server.registerTool(
     'listReleases',
     tools.listReleases.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.listReleases.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.listReleases.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register listIssueTags tool
   server.registerTool(
     'listIssueTags',
     tools.listIssueTags.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.listIssueTags.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.listIssueTags.handler(input, getClientFromExtra(extra));
     }
   );
 
-  // Register findSimilarIssues tool
   server.registerTool(
     'findSimilarIssues',
     tools.findSimilarIssues.definition,
-    async (input) => {
-      if (!isAuthenticated()) {
-        throw new AuthenticationError('Authentication required');
-      }
-      return tools.findSimilarIssues.handler(input as any);
+    async (input: any, extra: any) => {
+      requireAuth(extra);
+      return tools.findSimilarIssues.handler(input, getClientFromExtra(extra));
     }
   );
 

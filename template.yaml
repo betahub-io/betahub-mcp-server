@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: BetaHub MCP Server - Serverless deployment
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: mcp.betahub.io
+    Description: Custom domain name for the MCP endpoint
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN (must be in the same region as the API)
+  HostedZoneId:
+    Type: String
+    Description: Route53 hosted zone ID for the domain
+    Default: ''
+
+Conditions:
+  HasHostedZone: !Not [!Equals [!Ref HostedZoneId, '']]
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs20.x
+
+Resources:
+  McpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        EndpointConfiguration: REGIONAL
+        Route53: !If
+          - HasHostedZone
+          - HostedZoneId: !Ref HostedZoneId
+          - !Ref AWS::NoValue
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - POST
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - Accept
+          - Mcp-Session-Id
+
+  McpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda.handler
+      CodeUri: dist/
+      Events:
+        McpPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref McpApi
+            Path: /mcp
+            Method: POST
+        McpGet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref McpApi
+            Path: /mcp
+            Method: GET
+        McpDelete:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref McpApi
+            Path: /mcp
+            Method: DELETE
+
+Outputs:
+  McpEndpoint:
+    Description: MCP Server endpoint URL
+    Value: !Sub 'https://${DomainName}/mcp'
+  ApiEndpoint:
+    Description: API Gateway endpoint URL (before custom domain)
+    Value: !Sub 'https://${McpApi}.execute-api.${AWS::Region}.amazonaws.com/mcp'

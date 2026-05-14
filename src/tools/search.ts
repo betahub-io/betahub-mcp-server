@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { FeatureRequestSearchResponse } from '../types/betahub.js';
 import type { SearchSuggestionsInput, ToolResponse } from '../types/mcp.js';
@@ -26,8 +26,8 @@ export async function searchSuggestions({
   query,
   skipIds,
   scopedId,
-}: SearchSuggestionsInput): Promise<ToolResponse> {
-  const client = getApiClient();
+}: SearchSuggestionsInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
+  const client = apiClient || getApiClient();
 
   // Validate that either query or scopedId is provided
   if (!query && !scopedId) {

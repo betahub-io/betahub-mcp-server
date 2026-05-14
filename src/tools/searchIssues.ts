@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { getApiClient } from '../api/client.js';
+import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { IssueSearchResponse } from '../types/betahub.js';
 import type { SearchIssuesInput, ToolResponse } from '../types/mcp.js';
@@ -26,8 +26,8 @@ export async function searchIssues({
   query,
   skipIds,
   scopedId,
-}: SearchIssuesInput): Promise<ToolResponse> {
-  const client = getApiClient();
+}: SearchIssuesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
+  const client = apiClient || getApiClient();
 
   // Validate that either query or scopedId is provided
   if (!query && !scopedId) {

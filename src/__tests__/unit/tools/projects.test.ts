@@ -113,5 +113,19 @@ describe('Projects Tool', () => {
       expect(text).toContain('\n  ');
       expect(text).toContain('"projects"');
     });
+
+    it('should use provided client instead of global getApiClient', async () => {
+      const customClient = {
+        get: vi.fn().mockResolvedValue([createProject({ id: 'pr-custom', name: 'Custom Project' })]),
+      };
+
+      const result = await listProjects(undefined, customClient as any);
+
+      expect(customClient.get).toHaveBeenCalledWith('projects.json');
+      expect(mockClient.get).not.toHaveBeenCalled();
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.projects[0].name).toBe('Custom Project');
+    });
   });
 });
