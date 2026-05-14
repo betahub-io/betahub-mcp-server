@@ -272,5 +272,128 @@ describe('SearchIssues Tool', () => {
       expect(parsed.issues).toHaveLength(1);
       expect(parsed.pagination.total_count).toBe(1);
     });
+
+    it('should filter out token field from multi-result search', async () => {
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', token: 'secret-token-123' }),
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
+      };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        query: 'test'
+      });
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.issues[0]).not.toHaveProperty('token');
+    });
+
+    it('should truncate description by default in multi-result search', async () => {
+      const longDescription = 'M'.repeat(500);
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', description: longDescription }),
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
+      };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        query: 'test'
+      });
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.issues[0].description).toBe('M'.repeat(300) + '...');
+    });
+
+    it('should accept fields parameter for multi-result search', async () => {
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', title: 'Issue 1' }),
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
+      };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        query: 'test',
+        fields: ['id', 'title', 'url'],
+      } as any);
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(Object.keys(parsed.issues[0])).toEqual(['id', 'title', 'url']);
+    });
+
+    it('should NOT truncate scopedId single-result response', async () => {
+      const longDescription = 'N'.repeat(500);
+      const issue = createIssue({ id: 'g-123', description: longDescription });
+      mockClient.get.mockResolvedValue(issue);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        scopedId: 'g-123'
+      });
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.issue.description).toBe(longDescription);
+    });
+
+    it('should filter out token field from scopedId single-result response', async () => {
+      const issue = createIssue({ id: 'g-123', token: 'secret-token-456' });
+      mockClient.get.mockResolvedValue(issue);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        scopedId: 'g-123'
+      });
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.issue).not.toHaveProperty('token');
+    });
+
+    it('should accept maxFieldLength=0 for full content in multi-result search', async () => {
+      const longDescription = 'P'.repeat(500);
+      const response = {
+        issues: [
+          createIssue({ id: 'g-1', description: longDescription }),
+        ],
+        pagination: {
+          current_page: 1,
+          total_pages: 1,
+          total_count: 1,
+          per_page: 25
+        }
+      };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await searchIssues({
+        projectId: 'pr-test',
+        query: 'test',
+        maxFieldLength: 0,
+      } as any);
+
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.issues[0].description).toBe(longDescription);
+    });
   });
 });

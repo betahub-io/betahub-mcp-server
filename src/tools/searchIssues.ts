@@ -7,12 +7,23 @@ import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { IssueSearchResponse } from '../types/betahub.js';
 import type { SearchIssuesInput, ToolResponse } from '../types/mcp.js';
+import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
 
 export const searchIssuesInputSchema = {
   projectId: z.string().describe('The project ID to search issues in'),
   query: z.string().optional().describe('The search query string to match against issue titles and descriptions'),
   skipIds: z.string().optional().describe('Comma-separated list of issue IDs to exclude from results'),
   scopedId: z.string().optional().describe('Instead of searching, find a specific issue by its scoped ID (e.g., "123" or "g-456")'),
+  fields: z
+    .array(z.enum(ISSUE_FIELDS as unknown as [string, ...string[]]))
+    .optional()
+    .describe('Fields to include in each issue (multi-result search only). Defaults to all fields. Example: ["id", "title", "status", "url"] for a compact list.'),
+  maxFieldLength: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe('Max characters for long text fields in multi-result search (description, steps_to_reproduce). Truncated values get "..." appended. Default: 300. Set to 0 for no truncation. Does not apply to scopedId lookups.'),
 };
 
 export const searchIssuesDefinition = {
@@ -26,6 +37,8 @@ export async function searchIssues({
   query,
   skipIds,
   scopedId,
+  fields,
+  maxFieldLength,
 }: SearchIssuesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
   const client = apiClient || getApiClient();
 
@@ -51,18 +64,23 @@ export async function searchIssues({
     let result: any;
 
     if ('issues' in response) {
-      // Full search response - same format as index with pagination
+      // Full search response — apply field filtering and truncation
+      const formattedIssues = formatIssues(response.issues, {
+        fields: fields as IssueField[] | undefined,
+        maxFieldLength,
+      });
       result = {
-        issues: response.issues,
+        issues: formattedIssues,
         pagination: response.pagination,
         type: 'search',
         project_id: projectId,
         query,
       };
     } else {
-      // Single issue (scoped_id search)
+      // Single issue (scoped_id search) — no truncation, but strip token
+      const { token: _token, ...issueWithoutToken } = response as unknown as Record<string, unknown>;
       result = {
-        issue: response,
+        issue: issueWithoutToken,
         type: 'scoped_id_search',
         project_id: projectId,
         scoped_id: scopedId,

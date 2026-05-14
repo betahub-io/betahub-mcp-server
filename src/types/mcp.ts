@@ -44,6 +44,8 @@ export interface ListIssuesInput {
   updatedAfter?: string;
   updatedBefore?: string;
   tagIds?: string;
+  fields?: string[];
+  maxFieldLength?: number;
 }
 
 export interface ListIssueTagsInput {
@@ -55,6 +57,8 @@ export interface SearchIssuesInput {
   query?: string;
   skipIds?: string;
   scopedId?: string;
+  fields?: string[];
+  maxFieldLength?: number;
 }
 
 export interface ListReleasesInput {

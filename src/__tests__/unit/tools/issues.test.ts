@@ -201,5 +201,100 @@ describe('Issues Tool', () => {
       expect(parsed.issues).toHaveLength(0);
       expect(parsed.pagination.total_count).toBe(0);
     });
+
+    it('should truncate description to 300 chars by default', async () => {
+      const longDescription = 'X'.repeat(500);
+      const response = createIssuesResponse(1);
+      response.issues[0] = { ...response.issues[0], description: longDescription };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await listIssues({ projectId: 'pr-test' });
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(parsed.issues[0].description).toBe('X'.repeat(300) + '...');
+    });
+
+    it('should accept fields parameter and return only specified fields', async () => {
+      const response = createIssuesResponse(1);
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await listIssues({
+        projectId: 'pr-test',
+        fields: ['id', 'title', 'status', 'url'],
+      } as any);
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(Object.keys(parsed.issues[0])).toEqual(['id', 'title', 'status', 'url']);
+    });
+
+    it('should accept maxFieldLength=0 and return full content', async () => {
+      const longDescription = 'Y'.repeat(500);
+      const response = createIssuesResponse(1);
+      response.issues[0] = { ...response.issues[0], description: longDescription };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await listIssues({
+        projectId: 'pr-test',
+        maxFieldLength: 0,
+      } as any);
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(parsed.issues[0].description).toBe(longDescription);
+    });
+
+    it('should accept custom maxFieldLength', async () => {
+      const longDescription = 'Z'.repeat(200);
+      const response = createIssuesResponse(1);
+      response.issues[0] = { ...response.issues[0], description: longDescription };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await listIssues({
+        projectId: 'pr-test',
+        maxFieldLength: 100,
+      } as any);
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(parsed.issues[0].description).toBe('Z'.repeat(100) + '...');
+    });
+  });
+
+  describe('listIssuesInputSchema', () => {
+    it('should validate fields as array of valid field names', () => {
+      const schema = z.object(listIssuesInputSchema);
+
+      const result = schema.parse({
+        projectId: 'pr-123',
+        fields: ['id', 'title', 'status'],
+      });
+      expect(result.fields).toEqual(['id', 'title', 'status']);
+    });
+
+    it('should reject invalid field names', () => {
+      const schema = z.object(listIssuesInputSchema);
+
+      expect(() => schema.parse({
+        projectId: 'pr-123',
+        fields: ['id', 'invalid_field'],
+      })).toThrow();
+    });
+
+    it('should validate maxFieldLength as non-negative integer', () => {
+      const schema = z.object(listIssuesInputSchema);
+
+      expect(() => schema.parse({
+        projectId: 'pr-123',
+        maxFieldLength: 100,
+      })).not.toThrow();
+
+      expect(() => schema.parse({
+        projectId: 'pr-123',
+        maxFieldLength: 0,
+      })).not.toThrow();
+
+      expect(() => schema.parse({
+        projectId: 'pr-123',
+        maxFieldLength: -1,
+      })).toThrow();
+    });
   });
 });

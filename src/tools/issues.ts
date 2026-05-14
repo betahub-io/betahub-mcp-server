@@ -7,6 +7,7 @@ import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { IssuesResponse } from '../types/betahub.js';
 import type { ListIssuesInput, ToolResponse } from '../types/mcp.js';
+import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
 
 export const listIssuesInputSchema = {
   projectId: z.string().describe('The project ID to fetch issues from'),
@@ -58,6 +59,16 @@ export const listIssuesInputSchema = {
     .string()
     .optional()
     .describe('Filter issues by tag IDs (comma-separated, e.g., "1,2,3"). Only issues with at least one of these tags will be returned. Use the listIssueTags tool to discover available tag IDs for a project.'),
+  fields: z
+    .array(z.enum(ISSUE_FIELDS as unknown as [string, ...string[]]))
+    .optional()
+    .describe('Fields to include in each issue. Defaults to all fields. Example: ["id", "title", "status", "url"] for a compact list.'),
+  maxFieldLength: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe('Max characters for long text fields (description, steps_to_reproduce). Truncated values get "..." appended. Default: 300. Set to 0 for no truncation.'),
 };
 
 export const listIssuesDefinition = {
@@ -77,6 +88,8 @@ export async function listIssues({
   updatedAfter,
   updatedBefore,
   tagIds,
+  fields,
+  maxFieldLength,
 }: ListIssuesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
   const client = apiClient || getApiClient();
 
@@ -99,21 +112,10 @@ export async function listIssues({
 
     const response = await client.get<IssuesResponse>(endpoint);
 
-    const formattedIssues = response.issues.map((issue) => ({
-      id: issue.id,
-      title: issue.title,
-      description: issue.description,
-      status: issue.status,
-      priority: issue.priority,
-      score: issue.score,
-      steps_to_reproduce: issue.steps_to_reproduce,
-      assigned_to: issue.assigned_to,
-      reported_by: issue.reported_by,
-      potential_duplicate: issue.potential_duplicate,
-      created_at: issue.created_at,
-      updated_at: issue.updated_at,
-      url: issue.url,
-    }));
+    const formattedIssues = formatIssues(response.issues, {
+      fields: fields as IssueField[] | undefined,
+      maxFieldLength,
+    });
 
     return {
       content: [{
