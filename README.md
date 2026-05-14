@@ -20,51 +20,88 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
 - **Filter by tags** - Filter issues using tag IDs
 - **Filter by date** - Filter by creation or update date ranges
+- **Control response size** - Select specific fields and configure text truncation for large payloads
 - **Full MCP compliance** - Works with any MCP-enabled AI assistant
 
-## Installation
-
-### Prerequisites
-
-- Node.js v18 or higher
-- A BetaHub account with API access
-- A BetaHub Personal Access Token
-
-### Getting Your BetaHub Token
+## Getting Your BetaHub Token
 
 1. Go to your BetaHub profile settings
 2. Navigate to "Personal Access Tokens"
 3. Create a new token with appropriate permissions
 4. Token format: `pat-{64-character-hex}`
 
-## Quick Start
+## Quick Start — Hosted Endpoint (Recommended)
 
-The BetaHub MCP Server is available as an npm package:
+The fastest way to get started is connecting to the hosted BetaHub MCP server at `mcp.betahub.io`. No installation required — just provide your BetaHub token.
+
+### Claude Code
+
+```bash
+claude mcp add betahub --transport http -H "Authorization: Bearer pat-your-token-here" https://mcp.betahub.io/
+```
+
+Verify it works:
+
+```bash
+claude mcp list
+claude -p "What BetaHub MCP tools are available?"
+```
+
+### Claude Desktop App
+
+Add to your Claude Desktop configuration file:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "betahub": {
+      "type": "streamable-http",
+      "url": "https://mcp.betahub.io/",
+      "headers": {
+        "Authorization": "Bearer pat-your-token-here"
+      }
+    }
+  }
+}
+```
+
+### Generic MCP Client
+
+Any MCP client that supports HTTP transport can connect:
+
+- **Transport**: Streamable HTTP
+- **URL**: `https://mcp.betahub.io/`
+- **Headers**: `Authorization: Bearer pat-your-token-here`
+- **Accept**: `application/json, text/event-stream`
+
+## Alternative: Self-Hosted Setup
+
+If you prefer to run the MCP server locally (e.g., for development or air-gapped environments), you can install and run it via npm.
+
+### Prerequisites
+
+- Node.js v18 or higher
+
+### Installation
 
 ```bash
 npm install -g betahub-mcp-server
 ```
 
-## Configuration
-
-### Claude Code (Recommended)
-
-Add the BetaHub MCP server to Claude Code with your authentication token:
+### Claude Code
 
 ```bash
-# Simple one-line setup with token as argument (recommended)
+# One-line setup with token as argument
 claude mcp add betahub npx betahub-mcp-server -- --token=pat-your-token-here
 
 # Verify the connection
 claude mcp list
-
-# Test the tools
-claude -p "What BetaHub MCP tools are available?"
 ```
 
 #### Alternative: Using Environment Variable
-
-If you prefer to use environment variables instead of command-line arguments:
 
 ```bash
 claude mcp add-json betahub '{
@@ -77,11 +114,6 @@ claude mcp add-json betahub '{
 ```
 
 ### Claude Desktop App
-
-Add to your Claude Desktop configuration file:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- Linux: `~/.config/claude/claude_desktop_config.json`
 
 ```json
 {
@@ -127,9 +159,8 @@ Add to your Continue configuration (`~/.continue/config.json`):
 }
 ```
 
-### Generic MCP Client Configuration
+### Generic MCP Client (stdio)
 
-For any MCP-compatible client:
 - **Transport Type**: stdio
 - **Command**: `npx betahub-mcp-server --token=pat-your-token-here`
 - **Arguments**: Token can be passed as `--token=pat-xxx` argument or via `BETAHUB_TOKEN` environment variable
@@ -188,6 +219,13 @@ Once configured, you can interact with BetaHub through your AI assistant:
 "Get bugs created between January and March 2025"
 ```
 
+### Controlling Response Size
+```
+"List issues with only id, title, status, and url fields"
+"Show me issues with full descriptions (no truncation)"
+"List issues with descriptions limited to 100 characters"
+```
+
 ## Development
 
 ### Building from Source
@@ -196,7 +234,7 @@ If you want to contribute or modify the server:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/betahub-mcp-server.git
+git clone https://github.com/betahub-io/betahub-mcp-server.git
 cd betahub-mcp-server
 
 # Install dependencies
@@ -249,17 +287,17 @@ server.registerTool("newTool", {
 });
 ```
 
-## AWS Lambda Deployment
+### AWS Lambda Deployment
 
-You can deploy the BetaHub MCP server as a hosted endpoint on AWS Lambda, so users don't need to install anything locally.
+You can deploy your own instance of the BetaHub MCP server as a hosted endpoint on AWS Lambda.
 
-### Prerequisites
+#### Prerequisites
 
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 - An ACM certificate for your custom domain (must be in the same region as the API)
-- A Route53 hosted zone for the domain (optional — you can configure DNS manually)
+- A Route53 hosted zone for the domain
 
-### Build and Deploy
+#### Build and Deploy
 
 ```bash
 # Build the Lambda bundle
@@ -273,11 +311,11 @@ sam deploy
 ```
 
 SAM will prompt you for:
-- **DomainName** — your custom domain (e.g., `mcp.betahub.io`)
+- **DomainName** — your custom domain (e.g., `mcp.example.com`)
 - **CertificateArn** — the ARN of your ACM certificate
-- **HostedZoneId** — your Route53 hosted zone ID (leave empty to skip automatic DNS)
+- **HostedZoneId** — your Route53 hosted zone ID
 
-### How It Works
+#### How It Works
 
 The Lambda deployment uses the MCP Streamable HTTP transport in stateless mode:
 - Each request creates a fresh MCP server instance
@@ -285,22 +323,9 @@ The Lambda deployment uses the MCP Streamable HTTP transport in stateless mode:
 - Responses are pure JSON (no SSE streaming)
 - The bundled Lambda is a single ~760KB file with zero external dependencies
 
-### Connecting MCP Clients
-
-MCP clients connect to the hosted endpoint by providing their BetaHub token in the `Authorization` header:
-
-```
-POST https://mcp.betahub.io/
-Authorization: Bearer pat-your-token-here
-Accept: application/json, text/event-stream
-Content-Type: application/json
-```
-
-The server validates tokens by forwarding them to the BetaHub API — if the token is invalid, the first tool call will return an authentication error.
-
 ## Troubleshooting
 
-### Connection Failed
+### Connection Failed (Self-Hosted)
 
 1. Verify the package is installed:
    ```bash
@@ -327,10 +352,10 @@ The server validates tokens by forwarding them to the BetaHub API — if the tok
 If you need a specific version:
 ```bash
 # Install specific version
-npm install -g betahub-mcp-server@0.0.2
+npm install -g betahub-mcp-server@0.7.0
 
 # Use specific version with your MCP client
-npx betahub-mcp-server@0.0.2 --token=pat-your-token-here
+npx betahub-mcp-server@0.7.0 --token=pat-your-token-here
 ```
 
 ## License
