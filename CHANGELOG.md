@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-05-14
+
+### Added
+- `fields` parameter for `listIssues` and `searchIssues` tools — select which fields to include in each issue (e.g., `["id", "title", "status", "url"]` for a compact list)
+- `maxFieldLength` parameter for `listIssues` and `searchIssues` — configure max characters for long text fields (default: 300, set 0 for no truncation)
+- Shared `issueFormatter` utility for consistent field filtering and truncation across issue tools
+
+### Changed
+- `listIssues` and `searchIssues` now truncate `description`, `steps_to_reproduce`, and `potential_duplicate` to 300 characters by default to reduce response payload size
+- `searchIssues` multi-result responses now use field mapping instead of passing raw API responses
+
+### Fixed
+- `searchIssues` no longer leaks the `token` field in responses (both multi-result and scopedId lookups)
+
+## [0.6.0] - 2026-01-26
+
+### Added
+- `findSimilarIssues` tool for AI-powered semantic duplicate detection using vector similarity search
+- AWS Lambda deployment with Streamable HTTP transport (hosted at `mcp.betahub.io`)
+- Per-request authentication via `Authorization` header for Lambda endpoint
+- SAM template for infrastructure deployment
+
 ## [0.5.0] - 2026-01-26
 
 ### Changed
