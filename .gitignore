@@ -12,6 +12,9 @@ dist/
 out/
 *.tsbuildinfo
 
+# SAM deployment config (contains account-specific values)
+samconfig.toml
+
 # Environment files
 .env
 .env.local
