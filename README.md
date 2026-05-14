@@ -290,7 +290,7 @@ The Lambda deployment uses the MCP Streamable HTTP transport in stateless mode:
 MCP clients connect to the hosted endpoint by providing their BetaHub token in the `Authorization` header:
 
 ```
-POST https://mcp.betahub.io/mcp
+POST https://mcp.betahub.io/
 Authorization: Bearer pat-your-token-here
 Accept: application/json, text/event-stream
 Content-Type: application/json

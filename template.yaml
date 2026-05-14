@@ -52,25 +52,25 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref McpApi
-            Path: /mcp
+            Path: /
             Method: POST
         McpGet:
           Type: HttpApi
           Properties:
             ApiId: !Ref McpApi
-            Path: /mcp
+            Path: /
             Method: GET
         McpDelete:
           Type: HttpApi
           Properties:
             ApiId: !Ref McpApi
-            Path: /mcp
+            Path: /
             Method: DELETE
 
 Outputs:
   McpEndpoint:
     Description: MCP Server endpoint URL
-    Value: !Sub 'https://${DomainName}/mcp'
+    Value: !Sub 'https://${DomainName}/'
   ApiEndpoint:
     Description: API Gateway endpoint URL (before custom domain)
-    Value: !Sub 'https://${McpApi}.execute-api.${AWS::Region}.amazonaws.com/mcp'
+    Value: !Sub 'https://${McpApi}.execute-api.${AWS::Region}.amazonaws.com/'
