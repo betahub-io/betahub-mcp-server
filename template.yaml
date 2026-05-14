@@ -13,10 +13,6 @@ Parameters:
   HostedZoneId:
     Type: String
     Description: Route53 hosted zone ID for the domain
-    Default: ''
-
-Conditions:
-  HasHostedZone: !Not [!Equals [!Ref HostedZoneId, '']]
 
 Globals:
   Function:
@@ -33,10 +29,8 @@ Resources:
         DomainName: !Ref DomainName
         CertificateArn: !Ref CertificateArn
         EndpointConfiguration: REGIONAL
-        Route53: !If
-          - HasHostedZone
-          - HostedZoneId: !Ref HostedZoneId
-          - !Ref AWS::NoValue
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
       CorsConfiguration:
         AllowOrigins:
           - '*'
