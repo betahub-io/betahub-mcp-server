@@ -69,4 +69,7 @@ export interface FindSimilarIssuesInput {
   projectId: string;
   issueId: string;
   limit?: number;
+  includeArchived?: boolean;
+  fields?: string[];
+  maxFieldLength?: number;
 }

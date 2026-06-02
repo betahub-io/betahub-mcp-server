@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-06-02
+
+### Fixed
+- `findSimilarIssues` now reads the API's `similarity_score` field instead of the issue's own `score` column. The deployed backend changed `find_similar.json` to return the full issue object (with its own `score` as a decimal string) plus a separate `similarity_score`; the tool had been surfacing the wrong value.
+
+### Added
+- `findSimilarIssues` now returns enriched issue objects (description, status, priority, `scoped_id`, etc.) instead of only id/title/url
+- `includeArchived` parameter for `findSimilarIssues` (sent as `include_archived=true`); archived issues are excluded by default
+- `fields` and `maxFieldLength` parameters for `findSimilarIssues`, consistent with `listIssues`/`searchIssues`
+- `scoped_id` added to the shared issue field set, so `listIssues`/`searchIssues`/`findSimilarIssues` all expose it (the `find_similar` API resolves issues by scoped ID, not the numeric ID)
+
+### Changed
+- `findSimilarIssues` 403 errors now indicate the endpoint requires developer-level access
+
 ## [0.7.0] - 2026-05-14
 
 ### Added

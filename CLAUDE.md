@@ -127,13 +127,17 @@ Find similar or duplicate issues using AI-powered vector similarity search. **Th
 
 **Parameters:**
 - `projectId` (required): The project ID containing the issue
-- `issueId` (required): The issue ID (or scoped ID like "g-123") to find similar issues for
+- `issueId` (required): The issue **scoped ID** (e.g. "74" or "g-123") to find similar issues for. Note: the API resolves issues by scoped ID, not the internal numeric ID.
 - `limit` (optional): Maximum number of similar issues to return (1-50, default: 10)
+- `includeArchived` (optional): Include archived issues in the results. Archived issues are excluded by default.
+- `fields` (optional): Fields to include in each issue (e.g. `["id", "scoped_id", "title", "url"]`). Defaults to all fields; `similarity_score` is always included.
+- `maxFieldLength` (optional): Max characters for long text fields (description, steps_to_reproduce). Default 300; set to 0 for no truncation.
 
-**Response:** Returns similar issues with:
-- Issue ID, title, and URL
-- Similarity score (higher = more similar)
+**Response:** Returns similar issues, each as a full issue object (id, scoped_id, title, description, status, priority, etc. — minus attachments) plus:
+- `similarity_score` (higher = more similar) — distinct from the issue's own `score`
 - Recommendation to combine with `searchIssues` for comprehensive results
+
+**Access:** The similar-issues API is gated to developer-level access (`issues.merge`). A token whose user lacks that role receives a 403, even though `listIssues`/`searchIssues` still work.
 
 **Best Practice:** For comprehensive duplicate detection, use both `findSimilarIssues` (semantic similarity) and `searchIssues` (keyword matching) together.
 

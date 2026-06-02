@@ -1,7 +1,7 @@
 import type { Issue } from '../types/betahub.js';
 
 export const ISSUE_FIELDS = [
-  'id', 'title', 'description', 'status', 'priority', 'score',
+  'id', 'scoped_id', 'title', 'description', 'status', 'priority', 'score',
   'steps_to_reproduce', 'assigned_to', 'reported_by',
   'potential_duplicate', 'created_at', 'updated_at', 'url',
 ] as const;

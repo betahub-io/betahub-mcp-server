@@ -70,13 +70,15 @@ export type FeatureRequestSearchResponse =
 
 export interface Issue {
   id: string;
+  scoped_id?: string;
   title: string;
   description: string;
   status: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
   priority: 'low' | 'medium' | 'high' | 'critical';
   created_at: string;
   updated_at: string;
-  score?: number;
+  // The API serializes the issue's own score column as a decimal string (e.g. "0.78").
+  score?: number | string;
   steps_to_reproduce?: Array<{
     step: string;
   }>;
@@ -138,11 +140,11 @@ export interface IssueTagsResponse {
   tags: IssueTag[];
 }
 
-export interface SimilarIssue {
-  id: string;
-  title: string;
-  url: string;
-  score: number;
+// The find_similar endpoint returns the full issue object (minus attachments) plus a
+// top-level `similarity_score` (the vector-similarity value), distinct from the issue's
+// own `score` column.
+export interface SimilarIssue extends Issue {
+  similarity_score: number;
 }
 
 export interface FindSimilarIssuesResponse {

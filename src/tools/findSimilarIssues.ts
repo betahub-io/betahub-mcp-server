@@ -11,10 +11,11 @@ import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError } from '../errors.js';
 import type { FindSimilarIssuesResponse } from '../types/betahub.js';
 import type { FindSimilarIssuesInput, ToolResponse } from '../types/mcp.js';
+import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
 
 export const findSimilarIssuesInputSchema = {
   projectId: z.string().describe('The project ID containing the issue'),
-  issueId: z.string().describe('The issue ID (or scoped ID like "g-123") to find similar issues for'),
+  issueId: z.string().describe('The issue scoped ID (e.g. "74" or "g-123") to find similar issues for'),
   limit: z
     .number()
     .int()
@@ -22,6 +23,20 @@ export const findSimilarIssuesInputSchema = {
     .max(50)
     .optional()
     .describe('Maximum number of similar issues to return (1-50, default: 10)'),
+  includeArchived: z
+    .boolean()
+    .optional()
+    .describe('Include archived issues in the results. Archived issues are excluded by default.'),
+  fields: z
+    .array(z.enum(ISSUE_FIELDS as unknown as [string, ...string[]]))
+    .optional()
+    .describe('Fields to include in each issue. Defaults to all fields. The similarity_score is always included. Example: ["id", "scoped_id", "title", "url"] for a compact list.'),
+  maxFieldLength: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe('Max characters for long text fields (description, steps_to_reproduce). Truncated values get "..." appended. Default: 300. Set to 0 for no truncation.'),
 };
 
 export const findSimilarIssuesDefinition = {
@@ -39,22 +54,31 @@ export async function findSimilarIssues({
   projectId,
   issueId,
   limit = 10,
+  includeArchived = false,
+  fields,
+  maxFieldLength,
 }: FindSimilarIssuesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
   const client = apiClient || getApiClient();
 
   try {
     const params = new URLSearchParams();
     params.append('limit', limit.toString());
+    if (includeArchived) params.append('include_archived', 'true');
 
     const endpoint = `projects/${projectId}/issues/${issueId}/find_similar.json?${params.toString()}`;
 
     const response = await client.get<FindSimilarIssuesResponse>(endpoint);
 
-    const formattedIssues = response.issues.map((item) => ({
-      id: item.id,
-      title: item.title,
-      url: item.url,
-      similarity_score: item.score,
+    // Format the issue portion through the shared formatter (respecting fields /
+    // maxFieldLength), then re-attach the vector-similarity value per index — the
+    // formatter's field whitelist would otherwise drop similarity_score.
+    const formatted = formatIssues(response.issues, {
+      fields: fields as IssueField[] | undefined,
+      maxFieldLength,
+    });
+    const formattedIssues = formatted.map((issue, i) => ({
+      ...issue,
+      similarity_score: response.issues[i].similarity_score,
     }));
 
     return {
@@ -83,7 +107,12 @@ export async function findSimilarIssues({
         throw new NotFoundError('Issue', issueId);
       }
       if (error.message.includes('403')) {
-        throw new AccessDeniedError('find similar issues for', issueId);
+        // The find_similar API is gated to developer-level access (issues.merge);
+        // a token whose user lacks that role gets 403 even though list/search work.
+        throw new AccessDeniedError(
+          'find similar issues (requires developer-level access) for',
+          issueId
+        );
       }
     }
     throw new Error(
