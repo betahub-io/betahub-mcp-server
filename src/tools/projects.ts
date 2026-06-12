@@ -11,6 +11,7 @@ export const listProjectsDefinition = {
   title: 'List BetaHub Projects',
   description: 'List all projects accessible to the authenticated user',
   inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function listProjects(_input?: ListProjectsInput, client?: BetaHubApiClient): Promise<ToolResponse> {

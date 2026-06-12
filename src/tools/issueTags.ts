@@ -17,6 +17,7 @@ export const listIssueTagsDefinition = {
   title: 'List Issue Tags',
   description: 'List all issue tags from a BetaHub project. Tags are used to categorize and filter issues.',
   inputSchema: listIssueTagsInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function listIssueTags({

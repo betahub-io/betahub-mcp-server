@@ -48,6 +48,7 @@ export const findSimilarIssuesDefinition = {
     'even when they use different wording. For best results, combine with searchIssues text search ' +
     'to get comprehensive duplicate detection.',
   inputSchema: findSimilarIssuesInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function findSimilarIssues({

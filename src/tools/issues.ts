@@ -75,6 +75,7 @@ export const listIssuesDefinition = {
   title: 'List Issues/Bugs',
   description: 'List issues (bug reports) from a BetaHub project',
   inputSchema: listIssuesInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function listIssues({

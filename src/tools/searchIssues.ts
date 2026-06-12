@@ -30,6 +30,7 @@ export const searchIssuesDefinition = {
   title: 'Search Issues/Bugs',
   description: 'Search for issues (bug reports) within a BetaHub project. Supports text search and scoped ID lookup.',
   inputSchema: searchIssuesInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function searchIssues({

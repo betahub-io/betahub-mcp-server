@@ -19,6 +19,7 @@ export const searchSuggestionsDefinition = {
   title: 'Search Feature Requests/Suggestions',
   description: 'Search for feature requests (suggestions) within a BetaHub project. Supports text search and scoped ID lookup.',
   inputSchema: searchSuggestionsInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function searchSuggestions({

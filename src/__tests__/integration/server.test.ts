@@ -31,6 +31,14 @@ describe('MCP Server Integration', () => {
       expect(server).toBeDefined();
     });
 
+    it('every registry tool declares read-only annotations', () => {
+      for (const [name, tool] of Object.entries(tools)) {
+        const annotations = (tool.definition as { annotations?: Record<string, unknown> }).annotations;
+        expect(annotations, `${name} should declare annotations`).toBeDefined();
+        expect(annotations?.readOnlyHint, `${name} should be marked read-only`).toBe(true);
+      }
+    });
+
     it('registers every tool in the registry — no tool left unwired', () => {
       const spy = vi.spyOn(McpServer.prototype, 'registerTool');
 

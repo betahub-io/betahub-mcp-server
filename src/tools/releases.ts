@@ -17,6 +17,7 @@ export const listReleasesDefinition = {
   title: 'List Project Releases',
   description: 'List all releases for a BetaHub project',
   inputSchema: listReleasesInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function listReleases({ projectId }: ListReleasesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {

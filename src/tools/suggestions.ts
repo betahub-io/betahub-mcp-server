@@ -60,6 +60,7 @@ export const listSuggestionsDefinition = {
   title: 'List Feature Requests/Suggestions',
   description: 'List feature requests (suggestions) from a BetaHub project',
   inputSchema: listSuggestionsInputSchema,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
 export async function listSuggestions({
