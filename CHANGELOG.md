@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-06-12
+
+### Added
+- `listCustomFields` tool — lists a project's custom fields merged across bugs and suggestions, flagging which fields are aggregatable across both entity types (read-only)
+- `aggregateCustomField` tool — ranks bugs and suggestions by a custom field value (e.g. top contributors by `roblox_id`) with a per-type breakdown; developer-gated (`issues.merge`)
+- Read-only annotations (`readOnlyHint`/`idempotentHint`/`openWorldHint`) on every tool, so clients can reason about side effects and auto-approve safely
+
+### Changed
+- `createServer` now registers tools from the central tool registry instead of hand-wiring each one, guarded by an integration test asserting the registered set matches the registry
+
+### Fixed
+- 404/403 error mapping across all tools now keys off `ApiError.statusCode` instead of an `error.message.includes('404')` substring check that never matched real API responses — so `NotFoundError`/`AccessDeniedError` were never actually thrown for genuine 404/403s
+- `aggregateCustomField` escapes `|` and newlines in custom-field values so they cannot corrupt the rendered markdown table
+
 ## [0.8.0] - 2026-06-02
 
 ### Fixed
