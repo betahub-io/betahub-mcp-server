@@ -5,7 +5,7 @@
 import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { config } from '../config.js';
-import { NotFoundError, AccessDeniedError } from '../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { Release, ReleasesResponse } from '../types/betahub.js';
 import type { ListReleasesInput, ToolResponse } from '../types/mcp.js';
 
@@ -67,11 +67,11 @@ export async function listReleases({ projectId }: ListReleasesInput, apiClient?:
       }],
     };
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('404')) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 404) {
         throw new NotFoundError('Project', projectId);
       }
-      if (error.message.includes('403')) {
+      if (error.statusCode === 403) {
         throw new AccessDeniedError('project', projectId);
       }
     }

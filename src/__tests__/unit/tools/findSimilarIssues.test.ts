@@ -9,7 +9,7 @@ import {
   findSimilarIssuesInputSchema,
 } from '../../../tools/findSimilarIssues.js';
 import * as apiClient from '../../../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../../../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../../../errors.js';
 import { z } from 'zod';
 
 /**
@@ -256,7 +256,7 @@ describe('FindSimilarIssues Tool', () => {
     });
 
     it('should handle 404 errors as NotFoundError', async () => {
-      mockClient.get.mockRejectedValue(new Error('404'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
       await expect(
         findSimilarIssues({
@@ -267,7 +267,7 @@ describe('FindSimilarIssues Tool', () => {
     });
 
     it('should handle 403 errors as AccessDeniedError mentioning developer-level access', async () => {
-      mockClient.get.mockRejectedValue(new Error('403'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint'));
 
       await expect(
         findSimilarIssues({

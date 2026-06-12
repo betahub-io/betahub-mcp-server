@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { listIssueTags, listIssueTagsDefinition } from '../../../tools/issueTags.js';
 import * as apiClient from '../../../api/client.js';
 import { createIssueTag } from '../../helpers/factories.js';
-import { NotFoundError, AccessDeniedError } from '../../../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../../../errors.js';
 
 describe('Issue Tags Tool', () => {
   let mockClient: any;
@@ -143,7 +143,7 @@ describe('Issue Tags Tool', () => {
     });
 
     it('should throw NotFoundError for 404 responses', async () => {
-      mockClient.get.mockRejectedValue(new Error('Request failed with status code 404'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
       await expect(listIssueTags({ projectId: 'pr-nonexistent' }))
         .rejects
@@ -151,7 +151,7 @@ describe('Issue Tags Tool', () => {
     });
 
     it('should throw AccessDeniedError for 403 responses', async () => {
-      mockClient.get.mockRejectedValue(new Error('Request failed with status code 403'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint'));
 
       await expect(listIssueTags({ projectId: 'pr-private' }))
         .rejects

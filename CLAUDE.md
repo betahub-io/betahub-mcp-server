@@ -154,6 +154,34 @@ Lists all releases for a specific BetaHub project.
 - Attachments count
 - Direct links to BetaHub release pages
 
+#### 8. `listCustomFields`
+Lists a project's custom fields, **merged across bugs (issue) and suggestions (feature_request)**, so you can discover the `ident` to feed into `aggregateCustomField`. Tickets are intentionally excluded (the aggregation endpoint does not support them).
+
+**Parameters:**
+- `projectId` (required): The project ID to list custom fields for
+
+**Behavior:** Queries `custom_fields.json` for both `applies_to=issue` and `applies_to=feature_request` (following Kaminari pagination, 25/page) and merges by `ident`.
+
+**Response:** For each field — `ident`, display name, `field_type`, `required`, the entity types it applies to (bugs/suggestions), and a derived **`aggregatable across bugs + suggestions`** flag (true only when the ident exists on both types). `ident` is returned even to token-based callers.
+
+**Access:** Listing requires the `project.taxonomy.manage` scope. Note this is a **different** developer scope than aggregation's `issues.merge` — a token may have one but not the other, so either tool can 403 independently.
+
+#### 9. `aggregateCustomField`
+Groups a project's bugs and suggestions by the value of a custom field and returns a ranked per-value breakdown. Driving use case: **"top contributors by `roblox_id`"**.
+
+**Parameters:**
+- `projectId` (required): The project ID to aggregate within
+- `field` (required): The custom field **ident** to group by (e.g. `roblox_id`). Discover it with `listCustomFields`.
+- `types` (optional): Restrict to a single entity type — `bugs` or `suggestions`. Omit to aggregate across both.
+- `from` (optional): Only count entities created on/after this date (inclusive, e.g. `2026-05-01`)
+- `to` (optional): Only count entities created on/before this date (inclusive)
+- `status` (optional): Status filter applied to both types. A value valid for only one type simply yields zero for the other (no error).
+- `limit` (optional): Max value buckets to return (default 50, max 500)
+
+**Response:** A markdown ranking table — rank, value, total count, and bugs/suggestions split — sorted by total count descending.
+
+**Access:** Requires **developer-level access (`issues.merge` scope)** — the same gate as `findSimilarIssues`. A 403 means the token's user lacks that role, not a malformed request.
+
 ### Usage Examples
 
 #### Example 1: List all accessible projects
@@ -226,6 +254,26 @@ findSimilarIssues({
 # Get all releases for a project
 listReleases({
   "projectId": "pr-0690627851"
+})
+```
+
+#### Example 9: Discover custom fields (to find an ident to aggregate)
+```bash
+# List custom fields, merged across bugs and suggestions
+listCustomFields({
+  "projectId": "pr-0690627851"
+})
+```
+
+#### Example 10: Rank contributors by a custom field (e.g. roblox_id)
+```bash
+# Top contributors across bugs + suggestions, last month only
+aggregateCustomField({
+  "projectId": "pr-0690627851",
+  "field": "roblox_id",
+  "from": "2026-05-01",
+  "to": "2026-06-01",
+  "limit": 20
 })
 ```
 

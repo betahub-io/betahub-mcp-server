@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { FindSimilarIssuesResponse } from '../types/betahub.js';
 import type { FindSimilarIssuesInput, ToolResponse } from '../types/mcp.js';
 import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
@@ -102,11 +102,11 @@ export async function findSimilarIssues({
       ],
     };
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('404')) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 404) {
         throw new NotFoundError('Issue', issueId);
       }
-      if (error.message.includes('403')) {
+      if (error.statusCode === 403) {
         // The find_similar API is gated to developer-level access (issues.merge);
         // a token whose user lacks that role gets 403 even though list/search work.
         throw new AccessDeniedError(

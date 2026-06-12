@@ -10,6 +10,8 @@ import { listIssueTags, listIssueTagsDefinition, listIssueTagsInputSchema } from
 import { searchIssues, searchIssuesDefinition, searchIssuesInputSchema } from './searchIssues.js';
 import { listReleases, listReleasesDefinition, listReleasesInputSchema } from './releases.js';
 import { findSimilarIssues, findSimilarIssuesDefinition, findSimilarIssuesInputSchema } from './findSimilarIssues.js';
+import { listCustomFields, listCustomFieldsDefinition, listCustomFieldsInputSchema } from './customFields.js';
+import { aggregateCustomField, aggregateCustomFieldDefinition, aggregateCustomFieldInputSchema } from './aggregateCustomField.js';
 
 export const tools = {
   listProjects: {
@@ -51,6 +53,16 @@ export const tools = {
     handler: findSimilarIssues,
     inputSchema: findSimilarIssuesInputSchema,
   },
+  listCustomFields: {
+    definition: listCustomFieldsDefinition,
+    handler: listCustomFields,
+    inputSchema: listCustomFieldsInputSchema,
+  },
+  aggregateCustomField: {
+    definition: aggregateCustomFieldDefinition,
+    handler: aggregateCustomField,
+    inputSchema: aggregateCustomFieldInputSchema,
+  },
 };
 
-export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues };
+export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues, listCustomFields, aggregateCustomField };

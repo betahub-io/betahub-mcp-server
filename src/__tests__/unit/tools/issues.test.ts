@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { listIssues, listIssuesDefinition, listIssuesInputSchema } from '../../../tools/issues.js';
 import * as apiClient from '../../../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../../../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../../../errors.js';
 import { createIssuesResponse } from '../../helpers/factories.js';
 import { z } from 'zod';
 
@@ -143,14 +143,14 @@ describe('Issues Tool', () => {
     });
 
     it('should handle 404 errors as NotFoundError', async () => {
-      mockClient.get.mockRejectedValue(new Error('404'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
       await expect(listIssues({ projectId: 'invalid' }))
         .rejects.toThrow(NotFoundError);
     });
 
     it('should handle 403 errors as AccessDeniedError', async () => {
-      mockClient.get.mockRejectedValue(new Error('403'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint'));
 
       await expect(listIssues({ projectId: 'private' }))
         .rejects.toThrow(AccessDeniedError);

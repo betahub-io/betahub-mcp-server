@@ -2,7 +2,7 @@
  * Factory functions for generating test data
  */
 
-import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink, IssueTag } from '../../types/betahub.js';
+import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink, IssueTag, CustomField, CustomFieldAggregationRow } from '../../types/betahub.js';
 
 export function createUser(overrides?: Partial<User>): User {
   return {
@@ -189,4 +189,55 @@ export function createIssueTagsResponse(count = 3) {
       })
     ),
   };
+}
+
+export function createCustomField(overrides?: Partial<CustomField>): CustomField {
+  return {
+    id: 1,
+    ident: 'roblox_id',
+    name: 'Roblox ID',
+    field_type: 'text',
+    required: false,
+    tester_settable: true,
+    tester_viewable: true,
+    options: null,
+    applies_to: 'issue',
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-02T00:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createCustomFieldsResponse(
+  fields: CustomField[],
+  paginationOverrides?: Partial<Pagination>
+) {
+  return {
+    custom_fields: fields,
+    pagination: createPagination({
+      total_count: fields.length,
+      ...paginationOverrides,
+    }),
+    project_id: 123,
+    applies_to: fields[0]?.applies_to ?? 'issue',
+  };
+}
+
+export function createCustomFieldAggregationRow(
+  overrides?: Partial<CustomFieldAggregationRow>
+): CustomFieldAggregationRow {
+  const by_type = { bugs: 0, suggestions: 0, ...overrides?.by_type };
+  return {
+    value: '123456789',
+    count: by_type.bugs + by_type.suggestions,
+    ...overrides,
+    by_type,
+  };
+}
+
+export function createCustomFieldAggregationResponse(
+  field: string,
+  rows: CustomFieldAggregationRow[]
+) {
+  return { field, results: rows };
 }

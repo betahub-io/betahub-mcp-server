@@ -73,3 +73,17 @@ export interface FindSimilarIssuesInput {
   fields?: string[];
   maxFieldLength?: number;
 }
+
+export interface ListCustomFieldsInput {
+  projectId: string;
+}
+
+export interface AggregateCustomFieldInput {
+  projectId: string;
+  field: string;
+  types?: 'bugs' | 'suggestions';
+  from?: string;
+  to?: string;
+  status?: string;
+  limit?: number;
+}

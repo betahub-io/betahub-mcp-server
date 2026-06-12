@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { searchIssues, searchIssuesDefinition, searchIssuesInputSchema } from '../../../tools/searchIssues.js';
 import * as apiClient from '../../../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../../../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../../../errors.js';
 import { createIssue } from '../../helpers/factories.js';
 import { z } from 'zod';
 
@@ -190,7 +190,7 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should handle 404 for scopedId not found', async () => {
-      mockClient.get.mockRejectedValue(new Error('404'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
       await expect(searchIssues({
         projectId: 'pr-test',
@@ -199,7 +199,7 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should handle 404 for project not found', async () => {
-      mockClient.get.mockRejectedValue(new Error('404'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
       await expect(searchIssues({
         projectId: 'invalid-project',
@@ -208,7 +208,7 @@ describe('SearchIssues Tool', () => {
     });
 
     it('should handle 403 errors as AccessDeniedError', async () => {
-      mockClient.get.mockRejectedValue(new Error('403'));
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint'));
 
       await expect(searchIssues({
         projectId: 'private',

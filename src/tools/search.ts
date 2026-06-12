@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { FeatureRequestSearchResponse } from '../types/betahub.js';
 import type { SearchSuggestionsInput, ToolResponse } from '../types/mcp.js';
 
@@ -77,14 +77,14 @@ export async function searchSuggestions({
       }],
     };
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('404')) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 404) {
         if (scopedId) {
           throw new NotFoundError('Feature request', scopedId);
         }
         throw new NotFoundError('Project', projectId);
       }
-      if (error.message.includes('403')) {
+      if (error.statusCode === 403) {
         throw new AccessDeniedError('search feature requests in project', projectId);
       }
     }

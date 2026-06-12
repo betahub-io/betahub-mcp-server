@@ -18,110 +18,27 @@ function requireAuth(extra: { authInfo?: { token: string } }): void {
 }
 
 export function createServer(): McpServer {
+  // The tools registry (src/tools/index.ts) is the single source of truth: capabilities and
+  // registration are both derived from it, so a tool added there is automatically exposed and
+  // cannot drift out of sync with the server (guarded by an integration test).
+  const capabilityTools = Object.fromEntries(
+    Object.entries(tools).map(([name, tool]) => [name, { description: tool.definition.description }])
+  );
+
   const server = new McpServer({
     name: config.server.name,
     version: config.server.version,
     capabilities: {
-      tools: {
-        listProjects: {
-          description: tools.listProjects.definition.description,
-        },
-        listSuggestions: {
-          description: tools.listSuggestions.definition.description,
-        },
-        searchSuggestions: {
-          description: tools.searchSuggestions.definition.description,
-        },
-        listIssues: {
-          description: tools.listIssues.definition.description,
-        },
-        searchIssues: {
-          description: tools.searchIssues.definition.description,
-        },
-        listReleases: {
-          description: tools.listReleases.definition.description,
-        },
-        listIssueTags: {
-          description: tools.listIssueTags.definition.description,
-        },
-        findSimilarIssues: {
-          description: tools.findSimilarIssues.definition.description,
-        },
-      },
+      tools: capabilityTools,
     },
   });
 
-  server.registerTool(
-    'listProjects',
-    tools.listProjects.definition,
-    async (_args: any, extra: any) => {
+  for (const [name, tool] of Object.entries(tools)) {
+    server.registerTool(name, tool.definition, async (input: any, extra: any) => {
       requireAuth(extra);
-      return tools.listProjects.handler(undefined, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'listSuggestions',
-    tools.listSuggestions.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.listSuggestions.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'searchSuggestions',
-    tools.searchSuggestions.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.searchSuggestions.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'listIssues',
-    tools.listIssues.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.listIssues.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'searchIssues',
-    tools.searchIssues.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.searchIssues.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'listReleases',
-    tools.listReleases.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.listReleases.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'listIssueTags',
-    tools.listIssueTags.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.listIssueTags.handler(input, getClientFromExtra(extra));
-    }
-  );
-
-  server.registerTool(
-    'findSimilarIssues',
-    tools.findSimilarIssues.definition,
-    async (input: any, extra: any) => {
-      requireAuth(extra);
-      return tools.findSimilarIssues.handler(input, getClientFromExtra(extra));
-    }
-  );
+      return tool.handler(input, getClientFromExtra(extra));
+    });
+  }
 
   return server;
 }

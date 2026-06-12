@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createServer } from '../../server.js';
+import { tools } from '../../tools/index.js';
 import * as authModule from '../../lib/auth.js';
 
 describe('MCP Server Integration', () => {
@@ -27,6 +29,19 @@ describe('MCP Server Integration', () => {
 
       // The tools should be registered but will check authentication when called
       expect(server).toBeDefined();
+    });
+
+    it('registers every tool in the registry — no tool left unwired', () => {
+      const spy = vi.spyOn(McpServer.prototype, 'registerTool');
+
+      createServer();
+
+      const registered = spy.mock.calls.map((call) => call[0] as string);
+      // Every registry tool must be wired into the server (catches the registry/server drift
+      // where a tool is added to tools/index.ts but never registerTool'd).
+      expect(new Set(registered)).toEqual(new Set(Object.keys(tools)));
+
+      spy.mockRestore();
     });
   });
 

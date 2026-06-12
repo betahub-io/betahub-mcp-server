@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
-import { NotFoundError, AccessDeniedError } from '../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { IssueSearchResponse } from '../types/betahub.js';
 import type { SearchIssuesInput, ToolResponse } from '../types/mcp.js';
 import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
@@ -94,14 +94,14 @@ export async function searchIssues({
       }],
     };
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('404')) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 404) {
         if (scopedId) {
           throw new NotFoundError('Issue', scopedId);
         }
         throw new NotFoundError('Project', projectId);
       }
-      if (error.message.includes('403')) {
+      if (error.statusCode === 403) {
         throw new AccessDeniedError('search issues in project', projectId);
       }
     }

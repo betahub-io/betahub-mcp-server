@@ -150,3 +150,45 @@ export interface SimilarIssue extends Issue {
 export interface FindSimilarIssuesResponse {
   issues: SimilarIssue[];
 }
+
+// A custom field definition. Token-based callers (FormUser / Discord bot) receive a limited
+// subset of properties (no id, options, tester_viewable, or timestamps), but `ident` — the
+// key aggregation selects on — is always present. Hence id/options/timestamps are optional.
+export interface CustomField {
+  id?: number;
+  ident: string;
+  name: string;
+  field_type: string;
+  required: boolean;
+  tester_settable?: boolean;
+  tester_viewable?: boolean;
+  options?: Record<string, unknown> | null;
+  applies_to: 'issue' | 'feature_request' | 'ticket';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CustomFieldsResponse {
+  custom_fields: CustomField[];
+  // Backward-compatible alias for custom_fields, only present when applies_to is "issue".
+  custom_issue_fields?: CustomField[];
+  pagination: Pagination;
+  project_id: number;
+  applies_to: string;
+}
+
+// A single aggregation bucket: a custom field value with its total occurrence count and a
+// per-type breakdown. `by_type` always carries both keys (zero when a type is absent).
+export interface CustomFieldAggregationRow {
+  value: string;
+  count: number;
+  by_type: {
+    bugs: number;
+    suggestions: number;
+  };
+}
+
+export interface CustomFieldAggregationResponse {
+  field: string;
+  results: CustomFieldAggregationRow[];
+}
