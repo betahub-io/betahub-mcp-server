@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-08-12
+
+### Added
+- `listIssueAttachments` tool — lists an issue's screenshots, video clips, log files and binary files as download URLs, fanning out in parallel to the four nested per-issue endpoints (read-only). Each file gets a forced-download URL (the CDN link plus the `?download=<filename>` marker the CloudFront viewer-response function turns into `Content-Disposition: attachment`). Screenshot annotation layers are surfaced as their own downloadable files, and an annotated screenshot's size is labelled "combined" because the API sums the image and layer blobs; video clips that failed to transcode or are still processing are flagged so callers do not download an unusable file; attachments with no blob are reported as such rather than as a broken link. The tool returns links, not file contents — its description says so, so hosts that cannot fetch URLs do not report success on nothing.
+
 ## [0.9.0] - 2026-06-12
 
 ### Added

@@ -15,6 +15,7 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Search issues/bugs** - Search by text query or find specific issues by ID
 - **Find similar issues** - AI-powered semantic search to find duplicate or related issues (recommended for duplicate detection)
 - **List issue tags** - Discover available tags for categorizing issues
+- **Download issue attachments** - Get download URLs for an issue's screenshots, video clips, log files and binary files
 - **Browse releases** - View project releases with download links
 - **Filter by status** - Access requests and issues in various states (open, in_progress, resolved, etc.)
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
@@ -204,6 +205,16 @@ Once configured, you can interact with BetaHub through your AI assistant:
 "List issues tagged with 'Performance' (tag ID 1953)"
 "Show me all bugs with tags 1957 or 1958 (Crash or Freeze)"
 ```
+
+### Issue Attachments
+```
+"Get the attachments for issue g-123 in project pr-0690627851"
+"Download the log files and screenshots from bug 74"
+"What videos are attached to issue g-456?"
+```
+
+The tool returns download URLs, not file contents — your MCP host needs to be able to
+fetch URLs (e.g. Claude Code) to actually save the files.
 
 ### Releases
 ```

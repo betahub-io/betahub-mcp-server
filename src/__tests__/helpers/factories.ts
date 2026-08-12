@@ -2,7 +2,7 @@
  * Factory functions for generating test data
  */
 
-import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink, IssueTag, CustomField, CustomFieldAggregationRow } from '../../types/betahub.js';
+import type { Project, FeatureRequest, User, TokenInfo, Pagination, Issue, Release, DownloadLink, IssueTag, CustomField, CustomFieldAggregationRow, IssueAttachment, AttachmentType } from '../../types/betahub.js';
 
 export function createUser(overrides?: Partial<User>): User {
   return {
@@ -240,4 +240,53 @@ export function createCustomFieldAggregationResponse(
   rows: CustomFieldAggregationRow[]
 ) {
   return { field, results: rows };
+}
+
+export function createIssueAttachment(
+  type: AttachmentType,
+  overrides?: Partial<IssueAttachment>
+): IssueAttachment {
+  const defaultsByType: Record<AttachmentType, Partial<IssueAttachment>> = {
+    screenshot: {
+      filename: 'crash.png',
+      url: 'https://storage.betahub.io/abc123',
+      content_type: 'image/png',
+      description: null,
+      layer_a_url: null,
+      layer_a_filename: null,
+    },
+    video_clip: {
+      filename: 'repro.mp4',
+      url: 'https://storage.betahub.io/vid456',
+      content_type: 'video/mp4',
+      processing: false,
+      processed: true,
+      failed: false,
+    },
+    log_file: {
+      filename: 'player.log',
+      url: 'https://storage.betahub.io/log789',
+      content_type: 'text/plain',
+    },
+    binary_file: {
+      filename: 'savegame.dat',
+      url: 'https://storage.betahub.io/bin000',
+      content_type: 'application/octet-stream',
+    },
+  };
+
+  return {
+    id: 1,
+    type,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-02T00:00:00Z',
+    size_bytes: 1024,
+    developer_private: false,
+    user: { id: 'user-1', name: 'Test Reporter' },
+    filename: null,
+    url: null,
+    content_type: null,
+    ...defaultsByType[type],
+    ...overrides,
+  };
 }

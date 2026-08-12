@@ -151,6 +151,39 @@ export interface FindSimilarIssuesResponse {
   issues: SimilarIssue[];
 }
 
+export type AttachmentType = 'screenshot' | 'video_clip' | 'log_file' | 'binary_file';
+
+// The four per-issue media endpoints (screenshots / video_clips / log_files / binary_files)
+// each render a standardized attachment shape, and each returns a BARE ARRAY rather than the
+// `{ key: [...] }` envelope every other endpoint this client consumes uses.
+//
+// `url` is the inline CloudFront URL (unsigned, no expiry). Appending `?download=<filename>`
+// makes the CDN serve it with Content-Disposition: attachment. `url`/`filename` are null when
+// the underlying blob is not attached.
+export interface IssueAttachment {
+  id: number;
+  type: AttachmentType;
+  created_at: string;
+  updated_at: string;
+  filename: string | null;
+  url: string | null;
+  content_type: string | null;
+  size_bytes: number | null;
+  developer_private: boolean;
+  // Nulled by the API when the caller may not see the issue's reporter.
+  // `id` is serialized as a number by the media jbuilders (unlike Issue#id elsewhere).
+  user: { id: string | number; name: string } | null;
+  // Screenshots only: `layer_a` is the annotation overlay, a separate image blob.
+  description?: string | null;
+  layer_a_url?: string | null;
+  layer_a_filename?: string | null;
+  // Video clips only: ProcessVideoJob transcodes `video` in place, so a clip that is still
+  // processing exposes the un-transcoded original, and a failed one is attached but unplayable.
+  processing?: boolean;
+  processed?: boolean;
+  failed?: boolean;
+}
+
 // A custom field definition. Token-based callers (FormUser / Discord bot) receive a limited
 // subset of properties (no id, options, tester_viewable, or timestamps), but `ident` — the
 // key aggregation selects on — is always present. Hence id/options/timestamps are optional.

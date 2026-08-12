@@ -74,6 +74,12 @@ export interface FindSimilarIssuesInput {
   maxFieldLength?: number;
 }
 
+export interface ListIssueAttachmentsInput {
+  projectId: string;
+  issueId: string;
+  types?: Array<'screenshot' | 'video_clip' | 'log_file' | 'binary_file'>;
+}
+
 export interface ListCustomFieldsInput {
   projectId: string;
 }

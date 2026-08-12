@@ -182,6 +182,26 @@ Groups a project's bugs and suggestions by the value of a custom field and retur
 
 **Access:** Requires **developer-level access (`issues.merge` scope)** — the same gate as `findSimilarIssues`. A 403 means the token's user lacks that role, not a malformed request.
 
+#### 10. `listIssueAttachments`
+Lists every file attached to an issue — screenshots, video clips, log files and binary files — as **download URLs**. It returns links, not file contents; the MCP host must fetch the URLs itself to save anything.
+
+**Parameters:**
+- `projectId` (required): The project ID the issue belongs to
+- `issueId` (required): The issue scoped ID (e.g. `74` or `g-456`) or global ID — the backend's `find_by_global_or_scoped_id` accepts both
+- `types` (optional): Restrict to a subset of `screenshot`, `video_clip`, `log_file`, `binary_file`. Omit for all four.
+
+**Behavior:** Fans out in parallel to the four nested per-issue endpoints (`screenshots.json`, `video_clips.json`, `log_files.json`, `binary_files.json`). Note these return a **bare JSON array**, not the `{ key: [...] }` envelope every other endpoint uses.
+
+**Response:** Attachments grouped by type, each with:
+- **Download URL** — the CDN URL plus `?download=<filename>`, which a CloudFront viewer-response function turns into `Content-Disposition: attachment`. These are unsigned public links; no auth header is needed to fetch them. Only this marked URL is emitted — BetaHub's blobs are already stored with `attachment` disposition and the CloudFront function is a no-op without the marker, so the bare URL is **not** an inline-view link and is not advertised as one.
+- Size, content type, upload timestamp, uploader (nulled by the API when the caller may not see the reporter). For an **annotated screenshot** the size is marked "combined" — `Screenshot#calculate_media_size_bytes` sums `image.byte_size + layer_a.byte_size`, so it exceeds the size of the file you actually download.
+- `developer_private` flagged when set
+- **Screenshots:** the `layer_a` annotation overlay as its own downloadable file, when present
+- **Video clips:** a warning when the clip `failed` to transcode (unplayable) or is still `processing` (the URL points at the un-transcoded original)
+- Attachments whose blob is missing are reported as having no file, rather than as a broken link
+
+**Access:** All four endpoints authorize through `IssuePolicy#show?` (`binary_files#index` reuses `view_log_files?`), so a caller either sees every attachment type on an issue or none — partial access across types cannot happen.
+
 ### Usage Examples
 
 #### Example 1: List all accessible projects
@@ -274,6 +294,22 @@ aggregateCustomField({
   "from": "2026-05-01",
   "to": "2026-06-01",
   "limit": 20
+})
+```
+
+#### Example 11: Get download links for an issue's files
+```bash
+# Everything attached to the bug
+listIssueAttachments({
+  "projectId": "pr-0690627851",
+  "issueId": "g-123"
+})
+
+# Just the logs and videos
+listIssueAttachments({
+  "projectId": "pr-0690627851",
+  "issueId": "g-123",
+  "types": ["log_file", "video_clip"]
 })
 ```
 

@@ -12,6 +12,7 @@ import { listReleases, listReleasesDefinition, listReleasesInputSchema } from '.
 import { findSimilarIssues, findSimilarIssuesDefinition, findSimilarIssuesInputSchema } from './findSimilarIssues.js';
 import { listCustomFields, listCustomFieldsDefinition, listCustomFieldsInputSchema } from './customFields.js';
 import { aggregateCustomField, aggregateCustomFieldDefinition, aggregateCustomFieldInputSchema } from './aggregateCustomField.js';
+import { listIssueAttachments, listIssueAttachmentsDefinition, listIssueAttachmentsInputSchema } from './listIssueAttachments.js';
 
 export const tools = {
   listProjects: {
@@ -63,6 +64,11 @@ export const tools = {
     handler: aggregateCustomField,
     inputSchema: aggregateCustomFieldInputSchema,
   },
+  listIssueAttachments: {
+    definition: listIssueAttachmentsDefinition,
+    handler: listIssueAttachments,
+    inputSchema: listIssueAttachmentsInputSchema,
+  },
 };
 
-export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues, listCustomFields, aggregateCustomField };
+export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues, listCustomFields, aggregateCustomField, listIssueAttachments };
