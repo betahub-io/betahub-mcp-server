@@ -5,6 +5,7 @@
  */
 
 import { z } from 'zod';
+import { config } from '../config.js';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { AttachmentType, IssueAttachment } from '../types/betahub.js';
@@ -53,7 +54,8 @@ export const listIssueAttachmentsDefinition = {
     'List every attachment on a BetaHub issue: screenshots, video clips, log files and binary files ' +
     '(savegames, crash dumps, configs). Returns a download URL for each file — it does NOT return the ' +
     'file contents, so the caller must fetch the URLs itself to actually download anything. The URLs are ' +
-    'public CDN links that need no authentication.',
+    'public CDN links that need no authentication. Also returns the issue\'s BetaHub dashboard URL, ' +
+    'so you can link the user to the issue page without a separate lookup.',
   inputSchema: listIssueAttachmentsInputSchema,
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
@@ -73,6 +75,14 @@ function toDownloadUrl(url: string, filename: string | null): string {
   if (!filename) return url;
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}download=${encodeURIComponent(filename)}`;
+}
+
+// The issue's page on the BetaHub dashboard. Synthesized rather than fetched: the
+// dashboard resolves the id through Issue.find_by_global_or_scoped_id, so both the
+// scoped ("5") and global ("g-456") forms the caller may pass work verbatim.
+function toIssuePageUrl(projectId: string, issueId: string): string {
+  const base = config.api.baseUrl.replace(/\/$/, '');
+  return `${base}/projects/${projectId}/issues/${issueId}`;
 }
 
 // Filenames and descriptions come from whoever reported the bug — including unauthenticated
@@ -185,14 +195,22 @@ export async function listIssueAttachments(
       if (results[index].length > 0) byType.set(type, results[index]);
     });
 
+    // A page link, not a file — labelled apart from the **Download:** links below so a
+    // host that fetches every URL it sees does not treat it as a fifth attachment.
+    const issuePageLink = `**Issue page:** ${toIssuePageUrl(projectId, issueId)}`;
+
     const total = results.reduce((sum, rows) => sum + rows.length, 0);
     if (total === 0) {
       return {
-        content: [{ type: 'text', text: `No attachments found on issue ${issueId}.` }],
+        content: [{
+          type: 'text',
+          text: `No attachments found on issue ${issueId}.\n\n${issuePageLink}\n`,
+        }],
       };
     }
 
     let output = `# Attachments for Issue ${issueId} (Project ${projectId})\n\n`;
+    output += `${issuePageLink}\n\n`;
     output += `Found ${total} attachment(s).\n\n`;
     output += `**These are links, not file contents.** Fetch the download URLs to save the files ` +
       `locally; they are public CDN links and need no authentication header.\n\n`;

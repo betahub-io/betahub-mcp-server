@@ -54,6 +54,12 @@ describe('List Issue Attachments Tool', () => {
       });
     });
 
+    it('advertises the issue dashboard link', () => {
+      // An agent that knows the link is here can hand the user a page URL
+      // without a second searchIssues round-trip.
+      expect(listIssueAttachmentsDefinition.description.toLowerCase()).toContain('dashboard');
+    });
+
     it('states it returns links rather than file contents', () => {
       // A host that cannot fetch URLs must not report success on an empty hand.
       expect(listIssueAttachmentsDefinition.description.toLowerCase()).toContain('url');
@@ -407,13 +413,71 @@ describe('List Issue Attachments Tool', () => {
     });
   });
 
+  describe('dashboard link', () => {
+    it('links to the issue page in the header', async () => {
+      mockByType({ screenshot: [createIssueAttachment('screenshot')] });
+
+      const text = (await listIssueAttachments({ projectId: 'pr-test', issueId: 'g-123' }))
+        .content[0].text;
+
+      expect(text).toContain(
+        '**Issue page:** https://app.betahub.io/projects/pr-test/issues/g-123'
+      );
+    });
+
+    it('links to the issue page even when the issue has no attachments', async () => {
+      // The empty hand is exactly when a user most wants to go look themselves.
+      mockByType({});
+
+      const text = (await listIssueAttachments({ projectId: 'pr-test', issueId: 'g-123' }))
+        .content[0].text;
+
+      expect(text).toContain(
+        '**Issue page:** https://app.betahub.io/projects/pr-test/issues/g-123'
+      );
+    });
+
+    it('puts a scoped id into the path verbatim', async () => {
+      // The dashboard resolves both the scoped ("5") and global ("g-456") forms via
+      // Issue.find_by_global_or_scoped_id, so whatever the caller passed goes straight in.
+      mockClient.get.mockResolvedValue([createIssueAttachment('screenshot')]);
+
+      const text = (await listIssueAttachments({
+        projectId: 'pr-test',
+        issueId: '5',
+        types: ['screenshot'],
+      })).content[0].text;
+
+      expect(text).toContain('**Issue page:** https://app.betahub.io/projects/pr-test/issues/5');
+    });
+
+    it('keeps the issue page link distinct from the file download links', async () => {
+      // It is a page, not a fifth attachment — a host that fetches every URL it sees
+      // must not mistake it for a file.
+      mockByType({
+        screenshot: [
+          createIssueAttachment('screenshot', {
+            url: 'https://storage.betahub.io/abc123',
+            filename: 'crash.png',
+          }),
+        ],
+      });
+
+      const text = (await listIssueAttachments({ projectId: 'pr-test', issueId: 'g-123' }))
+        .content[0].text;
+
+      expect(text).toContain('**Issue page:** https://app.betahub.io/projects/pr-test/issues/g-123');
+      expect(text).toContain('**Download:** https://storage.betahub.io/abc123?download=crash.png');
+    });
+  });
+
   describe('empty results', () => {
     it('reports when the issue has no attachments at all', async () => {
       mockByType({});
 
       const result = await listIssueAttachments({ projectId: 'pr-test', issueId: 'g-123' });
 
-      expect(result.content[0].text).toBe('No attachments found on issue g-123.');
+      expect(result.content[0].text).toContain('No attachments found on issue g-123.');
     });
   });
 

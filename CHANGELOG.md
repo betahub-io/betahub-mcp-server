@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `listIssueAttachments` now returns the issue's BetaHub dashboard URL alongside the file download links, so an agent can link the user to the issue page without a second `searchIssues` lookup. The link is synthesized from the id form the caller passed — the dashboard resolves both the scoped (`5`) and global (`g-456`) forms via `Issue.find_by_global_or_scoped_id` — and is emitted even when the issue has no attachments, which is exactly when a user most wants to go and look. It is labelled `**Issue page:**` rather than `**Download:**` so a host that fetches every URL it sees does not mistake a page for a fifth attachment.
+
 ## [0.10.0] - 2026-08-12
 
 ### Added

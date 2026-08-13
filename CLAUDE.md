@@ -192,7 +192,9 @@ Lists every file attached to an issue — screenshots, video clips, log files an
 
 **Behavior:** Fans out in parallel to the four nested per-issue endpoints (`screenshots.json`, `video_clips.json`, `log_files.json`, `binary_files.json`). Note these return a **bare JSON array**, not the `{ key: [...] }` envelope every other endpoint uses.
 
-**Response:** Attachments grouped by type, each with:
+**Response:** Starts with the issue's **dashboard URL** (`**Issue page:**`), so the caller can link the user to the issue without a second `searchIssues` lookup. It is synthesized as `<base>/projects/<projectId>/issues/<issueId>` from whatever id form the caller passed — the dashboard resolves both through `Issue.find_by_global_or_scoped_id`. It is a page link, not a file, and is labelled apart from the download links so a host that fetches every URL it sees does not treat it as a fifth attachment. The link is emitted even when the issue has no attachments at all.
+
+Then attachments grouped by type, each with:
 - **Download URL** — the CDN URL plus `?download=<filename>`, which a CloudFront viewer-response function turns into `Content-Disposition: attachment`. These are unsigned public links; no auth header is needed to fetch them. Only this marked URL is emitted — BetaHub's blobs are already stored with `attachment` disposition and the CloudFront function is a no-op without the marker, so the bare URL is **not** an inline-view link and is not advertised as one.
 - Size, content type, upload timestamp, uploader (nulled by the API when the caller may not see the reporter). For an **annotated screenshot** the size is marked "combined" — `Screenshot#calculate_media_size_bytes` sums `image.byte_size + layer_a.byte_size`, so it exceeds the size of the file you actually download.
 - `developer_private` flagged when set
