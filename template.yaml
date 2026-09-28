@@ -13,6 +13,15 @@ Parameters:
   HostedZoneId:
     Type: String
     Description: Route53 hosted zone ID for the domain
+  SentryDsn:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: >-
+      Sentry DSN for error reporting. Leave empty to disable reporting entirely — the
+      handler then initializes nothing. Supply it at deploy time
+      (--parameter-overrides SentryDsn=...) rather than in samconfig.toml, so it is
+      not written to disk in this repository.
 
 Globals:
   Function:
@@ -47,6 +56,9 @@ Resources:
     Properties:
       Handler: lambda.handler
       CodeUri: dist/
+      Environment:
+        Variables:
+          SENTRY_DSN: !Ref SentryDsn
       Events:
         McpPost:
           Type: HttpApi

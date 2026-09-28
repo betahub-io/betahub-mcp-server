@@ -1,6 +1,23 @@
 import { IncomingMessage, ServerResponse } from 'node:http';
+import * as Sentry from '@sentry/aws-serverless';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer } from './server.js';
+
+// Reporting is opt-in via SENTRY_DSN, supplied as a Lambda environment variable — no DSN
+// is committed to this repository. Left unset (the default for anyone running their own
+// copy) nothing is initialized, and captureException/flush below degrade to no-ops.
+//
+// This is deliberately handler-level only. Errors raised inside MCP tools never arrive
+// here: the SDK catches them during tool dispatch and turns them into `isError` results,
+// so what this sees is the crash class that would otherwise surface as a bare 502 with
+// nothing but a CloudWatch line behind it.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    // Error reporting only — this endpoint is per-request and cold-start sensitive.
+    tracesSampleRate: 0,
+  });
+}
 
 export interface ApiGatewayEvent {
   version: string;
@@ -92,6 +109,20 @@ function createMockResponse(): {
 }
 
 export async function handler(event: ApiGatewayEvent): Promise<ApiGatewayResult> {
+  try {
+    return await handleRequest(event);
+  } catch (error) {
+    Sentry.captureException(error);
+    // Lambda freezes the process as soon as the handler settles, so an unflushed event
+    // is a lost event. Bounded well inside the function's 30s timeout.
+    await Sentry.flush(2000);
+    // Rethrow unchanged: the 502 this produces is the pre-existing contract, and
+    // swallowing it here would turn a crash into a silent success.
+    throw error;
+  }
+}
+
+async function handleRequest(event: ApiGatewayEvent): Promise<ApiGatewayResult> {
   const method = event.requestContext.http.method;
 
   if (method !== 'POST') {

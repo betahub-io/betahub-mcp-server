@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.1",
+    "@sentry/aws-serverless": "^10.70.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -325,6 +325,36 @@ SAM will prompt you for:
 - **DomainName** — your custom domain (e.g., `mcp.example.com`)
 - **CertificateArn** — the ARN of your ACM certificate
 - **HostedZoneId** — your Route53 hosted zone ID
+- **SentryDsn** — optional, see below
+
+#### Error Reporting (optional)
+
+The Lambda reports unhandled crashes to [Sentry](https://sentry.io/) when a `SENTRY_DSN`
+environment variable is present. Leave it unset and nothing is initialized — the server
+runs exactly as it would without the integration, so no DSN is needed to self-host.
+
+Supply it at deploy time rather than storing it in `samconfig.toml`, so it stays out of
+any file on disk. Pass it **once**:
+
+```bash
+sam deploy --parameter-overrides SentryDsn=https://<key>@<org>.ingest.sentry.io/<project>
+```
+
+The value then lives in the CloudFormation stack. Later `sam deploy` runs do not need the
+flag — SAM sends `UsePreviousValue` for any parameter you omit, so the DSN carries over.
+Two consequences worth knowing:
+
+- **The first deploy after this parameter is introduced must include the flag.** SAM cannot
+  send `UsePreviousValue` for a parameter the stack does not have yet, so it falls back to
+  the empty default and reporting stays off — silently, since a missing DSN is a valid
+  configuration.
+- **You cannot read the DSN back out of CloudFormation** (`NoEcho: true` masks it). Get it
+  from your Sentry project settings if you need it again.
+
+Only crashes that escape the handler are reported. Errors raised inside MCP tools — a
+missing issue, a denied project — never reach it: the MCP SDK converts those into
+`isError` results before they can propagate, which is what keeps routine 404s out of
+your issue stream.
 
 #### How It Works
 
@@ -332,7 +362,7 @@ The Lambda deployment uses the MCP Streamable HTTP transport in stateless mode:
 - Each request creates a fresh MCP server instance
 - Authentication is per-request via the `Authorization` header (no global token)
 - Responses are pure JSON (no SSE streaming)
-- The bundled Lambda is a single ~760KB file with zero external dependencies
+- The bundled Lambda is a single ~1.1MB file with zero external dependencies
 
 ## Troubleshooting
 

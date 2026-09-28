@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Optional Sentry error reporting in the Lambda handler, enabled by a `SENTRY_DSN` environment variable wired through the new `SentryDsn` SAM parameter (`NoEcho`, empty default). No DSN is committed to this repository, and with the variable unset nothing is initialized — `captureException`/`flush` degrade to no-ops, so self-hosting is unaffected. Reporting is handler-level only: errors raised inside MCP tools are converted to `isError` results by the SDK before they can propagate, so routine 404s and permission denials stay out of the issue stream. Crashes are flushed before the handler settles, because Lambda freezes the process on return and an unflushed event is a lost one. Cost: the bundled Lambda grows from ~770KB to ~1.1MB.
 - `listIssueAttachments` now returns the issue's BetaHub dashboard URL alongside the file download links, so an agent can link the user to the issue page without a second `searchIssues` lookup. The link is synthesized from the id form the caller passed — the dashboard resolves both the scoped (`5`) and global (`g-456`) forms via `Issue.find_by_global_or_scoped_id` — and is emitted even when the issue has no attachments, which is exactly when a user most wants to go and look. It is labelled `**Issue page:**` rather than `**Download:**` so a host that fetches every URL it sees does not mistake a page for a fifth attachment.
 
 ## [0.10.0] - 2026-08-12
