@@ -225,3 +225,181 @@ export interface CustomFieldAggregationResponse {
   field: string;
   results: CustomFieldAggregationRow[];
 }
+// Sentiment analysis (projects/:id/sentiments/*.json). Ratings are on a 1-5 scale and null when
+// there is nothing to rate. Channel values are Discord channel ids or "cf-<forum id>" for Steam.
+export type SentimentCategory = 'positive' | 'negative' | 'neutral' | 'toxic' | 'excited' | 'frustrated';
+
+export interface DateRange {
+  from: string;
+  to: string;
+}
+
+export interface SentimentChannel {
+  value: string;
+  name: string;
+}
+
+export interface SentimentOverviewResponse {
+  date_range: DateRange;
+  message_count: number;
+  average_rating: number | null;
+  categories: Array<{ category: SentimentCategory; count: number }>;
+  top_words: Array<{ word: string; count: number }>;
+  trend: {
+    dates: string[];
+    message_count: number[];
+    average_rating: Array<number | null>;
+    net_sentiment: Array<number | null>;
+    frustration_share: Array<number | null>;
+    categories: Record<SentimentCategory, number[]>;
+  };
+  channels: SentimentChannel[];
+  ai_summary: string | null;
+}
+
+export interface SentimentInsight {
+  id: number;
+  category: 'info' | 'warning' | 'danger';
+  phrase: string;
+  reasoning: string | null;
+  confidence: string | null;
+  trend: string | null;
+  signal_strength: number | null;
+  matching_count: number | null;
+  evidence_count: number;
+  keywords: string[];
+  created_at: string;
+}
+
+export interface SentimentInsightsResponse {
+  topic: { id: number; title: string } | null;
+  run: {
+    status: 'success' | 'empty' | 'failed';
+    created_at: string;
+    summary: string | null;
+    empty_reason: string | null;
+  } | null;
+  insights: SentimentInsight[];
+}
+
+export interface SentimentTopic {
+  id: number | null;
+  title: string;
+  mentions: number;
+  previous_mentions: number;
+  trend: string;
+  change_percentage: number | null;
+  sentiment_distribution: Record<string, number>;
+  sentiment_percentages: Record<string, number>;
+  average_rating: number | null;
+  previous_average_rating: number | null;
+  rating_change_percentage: number | null;
+}
+
+export interface SentimentTopicsResponse {
+  date_range: DateRange;
+  total_topics_count: number;
+  topics: SentimentTopic[];
+}
+
+export interface SentimentMessage {
+  id: number;
+  text: string;
+  category: SentimentCategory;
+  confidence: number | null;
+  key_phrases: string[];
+  explanation: string | null;
+  language: string | null;
+  posted_at: string;
+  channel: SentimentChannel;
+  topic: { id: number; title: string } | null;
+  thread_url: string | null;
+}
+
+export interface SentimentMessagesResponse {
+  messages: SentimentMessage[];
+  pagination: Pagination;
+}
+
+// Steam discussions scanner (projects/:id/steam.json, projects/:id/steam/threads.json).
+export interface SteamCrawlRun {
+  id: number;
+  status: 'running' | 'finished' | 'blocked' | 'failed';
+  started_at: string;
+  finished_at: string | null;
+  pages_fetched: number | null;
+  stats: Record<string, number>;
+  error: string | null;
+}
+
+export interface SteamThreadCounts {
+  threads: number;
+  bugs: number;
+  suggestions: number;
+}
+
+export interface SteamScannerResponse {
+  source: {
+    name: string;
+    app_id: string;
+    hub_url: string;
+    status: 'idle' | 'crawling' | 'blocked' | 'failed' | 'disconnected';
+    last_crawl_at: string | null;
+    suggestion_mentions_threshold: number;
+    store_post_text: boolean;
+  };
+  range: { key: string; from: string; to: string };
+  activity: {
+    threads: number;
+    bugs: number;
+    linked: number;
+    suggestions: number;
+    waiting: number;
+    none: number;
+  };
+  waiting_suggestions: Array<{ thread_id: number; title: string; url: string; mentions: number }>;
+  forums: Array<{
+    id: number;
+    name: string;
+    url: string;
+    channel_value: string;
+    last_24h: SteamThreadCounts;
+    last_7d: SteamThreadCounts;
+    newest_posted_at: string | null;
+  }>;
+  current_crawl: SteamCrawlRun | null;
+  crawl_history: SteamCrawlRun[];
+}
+
+export type SteamThreadClassification = 'unclassified' | 'bug' | 'suggestion' | 'neither' | 'skipped';
+export type SteamThreadOutcome = 'pending' | 'created' | 'linked' | 'waiting' | 'none' | 'unlinked';
+
+export interface SteamThread {
+  id: number;
+  external_id: string;
+  title: string;
+  generated_title: string | null;
+  url: string;
+  forum: { id: number; name: string };
+  posted_at: string | null;
+  last_activity_at: string | null;
+  reply_count: number | null;
+  pinned: boolean | null;
+  classification: SteamThreadClassification;
+  classification_reason: string | null;
+  confidence: number | null;
+  outcome: SteamThreadOutcome;
+  unlinked_at: string | null;
+  record: {
+    type: 'issue' | 'feature_request';
+    id: number;
+    scoped_id?: string | null;
+    title: string;
+    url: string;
+  } | null;
+}
+
+export interface SteamThreadsResponse {
+  threads: SteamThread[];
+  pagination: Pagination;
+}

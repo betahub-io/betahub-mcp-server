@@ -97,6 +97,36 @@ describe('API Client', () => {
         }
       });
 
+      it("keeps the server's explanation from a JSON error body", async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+          json: () => Promise.resolve({ error: 'Steam discussions are not connected to this project.' }),
+        }]);
+
+        const error = await client.request('projects/pr-1/steam.json').catch((e) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error.statusCode).toBe(404);
+        expect(error.serverMessage).toBe('Steam discussions are not connected to this project.');
+      });
+
+      it('leaves serverMessage undefined when the error body is not JSON', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          json: () => Promise.reject(new SyntaxError('Unexpected token <')),
+        }]);
+
+        const error = await client.request('projects.json').catch((e) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error.statusCode).toBe(502);
+        expect(error.serverMessage).toBeUndefined();
+      });
+
       it('should handle network errors', async () => {
         global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
 

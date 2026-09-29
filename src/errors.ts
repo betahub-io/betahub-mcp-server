@@ -17,7 +17,9 @@ export class AuthenticationError extends BetaHubError {
 }
 
 export class ApiError extends BetaHubError {
-  constructor(message: string, public statusCode: number, public endpoint?: string) {
+  // serverMessage: the `error` field of a JSON error body, when the backend explains itself
+  // (e.g. which plan feature is missing), as opposed to the bare HTTP status text in `message`.
+  constructor(message: string, public statusCode: number, public endpoint?: string, public serverMessage?: string) {
     super(message, statusCode);
     this.name = 'ApiError';
   }

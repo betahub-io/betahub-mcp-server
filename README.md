@@ -17,6 +17,8 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **List issue tags** - Discover available tags for categorizing issues
 - **Download issue attachments** - Get download URLs for an issue's screenshots, video clips, log files and binary files
 - **Browse releases** - View project releases with download links
+- **Read community sentiment** - Overview, topics, AI insights and the scored Steam posts behind them (Pro/Enterprise)
+- **Browse Steam discussions** - The Steam scanner's status and the threads it turned into bugs and suggestions (Pro/Enterprise)
 - **Filter by status** - Access requests and issues in various states (open, in_progress, resolved, etc.)
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
 - **Filter by tags** - Filter issues using tag IDs
@@ -215,6 +217,19 @@ Once configured, you can interact with BetaHub through your AI assistant:
 
 The tool returns download URLs, not file contents — your MCP host needs to be able to
 fetch URLs (e.g. Claude Code) to actually save the files.
+
+### Sentiments and Steam Discussions
+```
+"How has the community felt about the game over the last month?"
+"Which topics are players most frustrated about, and is it getting worse?"
+"What are the AI insights for the combat topic? Show me the Steam posts behind the top one."
+"What did the Steam scanner find this week?"
+"List the Steam threads that became bugs"
+```
+
+These need a Personal Access Token whose user has the `project.analytics.view` permission
+(Developer role or organization admin) on a Pro or Enterprise plan; project tokens (`tkn-`)
+cannot read them. Only Steam posts are ever listed as messages — Discord messages stay private.
 
 ### Releases
 ```

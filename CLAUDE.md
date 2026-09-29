@@ -204,6 +204,23 @@ Then attachments grouped by type, each with:
 
 **Access:** All four endpoints authorize through `IssuePolicy#show?` (`binary_files#index` reuses `view_log_files?`), so a caller either sees every attachment type on an issue or none — partial access across types cannot happen.
 
+#### Sentiment and Steam discussion tools (11-16)
+
+All six are read-only and backed by JSON endpoints added to the backend for them (`projects/:id/sentiments/{overview,insights,topics,messages}.json`, `projects/:id/steam.json`, `projects/:id/steam/threads.json`). Shared filters, dashboard links and error mapping live in `src/tools/communityShared.ts`.
+
+**Access (all six):** a Personal Access Token whose user has `project.analytics.view` (Developer role or org admin) on a **Pro or Enterprise** plan. Project tokens (`tkn-`) are always refused — `Ability.check?` rejects non-User principals. 403s carry the backend's reason (`ApiError.serverMessage`), e.g. the plan message.
+
+**No demo data:** unlike the dashboard, the endpoints never fall back to demo data; a plan without sentiment analysis gets 403, a project without data gets zeros.
+
+**Sentiment filters** (overview, topics, messages): `from`/`to` (YYYY-MM-DD, both or neither, max 365 days — sent as `date_range=<from>to<to>`, default last 5 weeks), `category`, `channelIds` (BetaHub's ids for Discord channels — not Discord's own — or `cf-<forum id>` for Steam sub-forums; overview lists them), `roleNames`, `word` (one stored word, exact match — singular and lowercase; the tool lowercases it). Dates that don't exist (2026-09-31) are refused, since the backend would silently fall back to its default range. An unknown channel or role is a bare 400 from the backend.
+
+11. **`getSentimentOverview`** — message count, average rating (1-5, null with no messages), category split, top words, trend series (empty buckets have a null rating), the latest AI summary, and the filterable channels.
+12. **`listSentimentTopics`** — topics ranked by mentions with sentiment split, rating, and trend vs the previous period of equal length. `limit` 1-50 (default 10). Returns topic ids.
+13. **`listSentimentInsights`** — the latest insight run (`run.summary`, `empty_reason`) and its refined, not-low-confidence insights; general, or one topic's with `topicId`. Does not trigger a run.
+14. **`listSentimentMessages`** — scored **Steam posts only**; Discord messages are never listed (the dashboard's privacy rule), and Steam posts only when the source keeps post text (`store_post_text`). `topicId` narrows the filtered rows; `insightId` lists that insight's cited evidence and rejects the date/channel/role/word filters it would ignore. `query`, `page` (20 per page, max 50).
+15. **`getSteamScanner`** — connected game and status, activity counts by outcome over `range` (d1/d7/d30) or a custom `from`/`to`, waiting suggestions, per-forum counts (with each forum's `channel_value` for the sentiment filters), current and recent crawls. 404 "not connected" when no game is connected.
+16. **`listSteamThreads`** — threads newest first, 25 per page: title, Steam URL, forum, classification + reason, outcome, linked bug/suggestion. Filters: `forumId`, `classification`, `outcome`, `query`, `range` (d1/d7/d30/all, default d30).
+
 ### Usage Examples
 
 #### Example 1: List all accessible projects
@@ -312,6 +329,33 @@ listIssueAttachments({
   "projectId": "pr-0690627851",
   "issueId": "g-123",
   "types": ["log_file", "video_clip"]
+})
+```
+
+#### Example 12: Why is the community frustrated?
+```bash
+# Topics with the most frustrated messages in September
+listSentimentTopics({
+  "projectId": "pr-0690627851",
+  "from": "2026-09-01",
+  "to": "2026-09-28",
+  "category": "frustrated"
+})
+
+# The Steam posts cited by an insight
+listSentimentMessages({
+  "projectId": "pr-0690627851",
+  "insightId": 42
+})
+```
+
+#### Example 13: What did the Steam scanner turn into bugs?
+```bash
+listSteamThreads({
+  "projectId": "pr-0690627851",
+  "outcome": "created",
+  "classification": "bug",
+  "range": "d7"
 })
 ```
 

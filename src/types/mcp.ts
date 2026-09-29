@@ -93,3 +93,51 @@ export interface AggregateCustomFieldInput {
   status?: string;
   limit?: number;
 }
+// Dashboard filters shared by the sentiment tools.
+export interface SentimentFiltersInput {
+  from?: string;
+  to?: string;
+  category?: 'positive' | 'negative' | 'neutral' | 'toxic' | 'excited' | 'frustrated';
+  channelIds?: string[];
+  roleNames?: string[];
+  word?: string;
+}
+
+export interface GetSentimentOverviewInput extends SentimentFiltersInput {
+  projectId: string;
+}
+
+export interface ListSentimentInsightsInput {
+  projectId: string;
+  topicId?: number;
+}
+
+export interface ListSentimentTopicsInput extends SentimentFiltersInput {
+  projectId: string;
+  limit?: number;
+}
+
+export interface ListSentimentMessagesInput extends SentimentFiltersInput {
+  projectId: string;
+  topicId?: number;
+  insightId?: number;
+  query?: string;
+  page?: number;
+}
+
+export interface GetSteamScannerInput {
+  projectId: string;
+  range?: 'd1' | 'd7' | 'd30';
+  from?: string;
+  to?: string;
+}
+
+export interface ListSteamThreadsInput {
+  projectId: string;
+  forumId?: number;
+  classification?: 'unclassified' | 'bug' | 'suggestion' | 'neither' | 'skipped';
+  outcome?: 'pending' | 'created' | 'linked' | 'waiting' | 'none' | 'unlinked';
+  query?: string;
+  range?: 'd1' | 'd7' | 'd30' | 'all';
+  page?: number;
+}

@@ -13,6 +13,12 @@ import { findSimilarIssues, findSimilarIssuesDefinition, findSimilarIssuesInputS
 import { listCustomFields, listCustomFieldsDefinition, listCustomFieldsInputSchema } from './customFields.js';
 import { aggregateCustomField, aggregateCustomFieldDefinition, aggregateCustomFieldInputSchema } from './aggregateCustomField.js';
 import { listIssueAttachments, listIssueAttachmentsDefinition, listIssueAttachmentsInputSchema } from './listIssueAttachments.js';
+import { getSentimentOverview, getSentimentOverviewDefinition, getSentimentOverviewInputSchema } from './sentimentOverview.js';
+import { listSentimentInsights, listSentimentInsightsDefinition, listSentimentInsightsInputSchema } from './sentimentInsights.js';
+import { listSentimentTopics, listSentimentTopicsDefinition, listSentimentTopicsInputSchema } from './sentimentTopics.js';
+import { listSentimentMessages, listSentimentMessagesDefinition, listSentimentMessagesInputSchema } from './sentimentMessages.js';
+import { getSteamScanner, getSteamScannerDefinition, getSteamScannerInputSchema } from './steamScanner.js';
+import { listSteamThreads, listSteamThreadsDefinition, listSteamThreadsInputSchema } from './steamThreads.js';
 
 export const tools = {
   listProjects: {
@@ -69,6 +75,40 @@ export const tools = {
     handler: listIssueAttachments,
     inputSchema: listIssueAttachmentsInputSchema,
   },
+  getSentimentOverview: {
+    definition: getSentimentOverviewDefinition,
+    handler: getSentimentOverview,
+    inputSchema: getSentimentOverviewInputSchema,
+  },
+  listSentimentInsights: {
+    definition: listSentimentInsightsDefinition,
+    handler: listSentimentInsights,
+    inputSchema: listSentimentInsightsInputSchema,
+  },
+  listSentimentTopics: {
+    definition: listSentimentTopicsDefinition,
+    handler: listSentimentTopics,
+    inputSchema: listSentimentTopicsInputSchema,
+  },
+  listSentimentMessages: {
+    definition: listSentimentMessagesDefinition,
+    handler: listSentimentMessages,
+    inputSchema: listSentimentMessagesInputSchema,
+  },
+  getSteamScanner: {
+    definition: getSteamScannerDefinition,
+    handler: getSteamScanner,
+    inputSchema: getSteamScannerInputSchema,
+  },
+  listSteamThreads: {
+    definition: listSteamThreadsDefinition,
+    handler: listSteamThreads,
+    inputSchema: listSteamThreadsInputSchema,
+  },
 };
 
-export { listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases, findSimilarIssues, listCustomFields, aggregateCustomField, listIssueAttachments };
+export {
+  listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases,
+  findSimilarIssues, listCustomFields, aggregateCustomField, listIssueAttachments, getSentimentOverview,
+  listSentimentInsights, listSentimentTopics, listSentimentMessages, getSteamScanner, listSteamThreads,
+};

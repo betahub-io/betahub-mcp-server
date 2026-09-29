@@ -43,7 +43,8 @@ export class BetaHubApiClient {
         throw new ApiError(
           `API request failed: ${response.statusText}`,
           response.status,
-          endpoint
+          endpoint,
+          await readServerMessage(response)
         );
       }
 
@@ -76,6 +77,17 @@ export class BetaHubApiClient {
 
   async post<T>(endpoint: string, body?: any): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body });
+  }
+}
+
+// Error bodies are best effort: a proxy or crash page is not JSON, and that must not mask the status.
+async function readServerMessage(response: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await response.json();
+    const message = (body as { error?: unknown } | null)?.error;
+    return typeof message === 'string' ? message : undefined;
+  } catch {
+    return undefined;
   }
 }
 
