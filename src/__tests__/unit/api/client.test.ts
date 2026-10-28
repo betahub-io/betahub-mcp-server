@@ -127,6 +127,95 @@ describe('API Client', () => {
         expect(error.serverMessage).toBeUndefined();
       });
 
+      // The backend tells a coding agent what to do next; the agent only sees what we relay.
+      it('relays the way out of a missing-scope refusal', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 403,
+          json: () => Promise.resolve({
+            error: 'insufficient_scope',
+            required_scopes: ['org.projects.create'],
+            consent: {
+              url: 'https://app.betahub.io/agent_auth',
+              intent: 'setup',
+              instructions: 'https://app.betahub.io/agents/setup.md',
+            },
+          }),
+        }]);
+
+        const error = await client.request('project_bootstraps.json').catch((e) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error.hint).toContain('org.projects.create');
+        expect(error.hint).toContain('https://app.betahub.io/agent_auth');
+        expect(error.hint).toContain('"intent": "setup"');
+        expect(error.hint).toContain('https://app.betahub.io/agents/setup.md');
+        expect(error.message).toContain(error.hint);
+      });
+
+      it('relays how to reconnect an expired or revoked agent token', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 401,
+          json: () => Promise.resolve({
+            error: 'token_expired',
+            message: 'This agent token expired after going unused. Connect again.',
+            connect: {
+              url: 'https://app.betahub.io/agent_auth',
+              instructions: 'https://app.betahub.io/agents/setup.md',
+            },
+          }),
+        }]);
+
+        const error = await client.request('projects.json').catch((e) => e);
+
+        expect(error.hint).toContain('This agent token expired after going unused. Connect again.');
+        expect(error.hint).toContain('https://app.betahub.io/agents/setup.md');
+        expect(error.hint).toContain('replace the token');
+      });
+
+      it('says a refusal without a consent cannot be fixed with a token', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 403,
+          json: () => Promise.resolve({ error: 'insufficient_scope', required_scopes: null }),
+        }]);
+
+        const error = await client.request('projects/pr-1.json').catch((e) => e);
+
+        expect(error.hint).toContain('A scoped token cannot get this; the user does it in BetaHub.');
+      });
+
+      it('relays an upgrade page and a help page', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 422,
+          json: () => Promise.resolve({
+            error: 'active_projects_limit_reached',
+            upgrade_url: 'https://app.betahub.io/organizations/org-1/upgrade',
+            help_url: 'https://betahub.io/docs/account/organizations/#active-project-limit',
+          }),
+        }]);
+
+        const error = await client.request('project_bootstraps.json').catch((e) => e);
+
+        expect(error.hint).toContain('https://app.betahub.io/organizations/org-1/upgrade');
+        expect(error.hint).toContain('https://betahub.io/docs/account/organizations/#active-project-limit');
+      });
+
+      it('adds no hint when the body has none', async () => {
+        global.fetch = mockFetch([{
+          ok: false,
+          status: 404,
+          json: () => Promise.resolve({ error: 'Not found' }),
+        }]);
+
+        const error = await client.request('projects/pr-1.json').catch((e) => e);
+
+        expect(error.hint).toBeUndefined();
+        expect(error.message).toBe('API request failed: Internal Server Error');
+      });
+
       it('should handle network errors', async () => {
         global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
 

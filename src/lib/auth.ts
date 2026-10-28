@@ -4,6 +4,7 @@
 
 import { config, getApiUrl } from '../config.js';
 import { AuthenticationError } from '../errors.js';
+import { agentHint } from '../api/agentHint.js';
 import type { TokenInfo } from '../types/betahub.js';
 
 export interface AuthConfig {
@@ -39,8 +40,10 @@ export async function validateToken(token: string): Promise<TokenInfo> {
   });
 
   if (!response.ok) {
+    // An expired or revoked agent token is told how to reconnect.
+    const hint = agentHint(await response.json().catch(() => undefined));
     throw new AuthenticationError(
-      `Token validation failed with status ${response.status}`
+      `Token validation failed with status ${response.status}${hint ? `. ${hint}` : ''}`
     );
   }
 

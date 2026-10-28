@@ -113,6 +113,20 @@ describe('Auth Module', () => {
       await expect(validateToken('invalid-token')).rejects.toThrow(AuthenticationError);
     });
 
+    it('tells an agent with an expired token how to reconnect', async () => {
+      global.fetch = mockFetch([{
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({
+          error: 'token_expired',
+          message: 'This agent token expired after going unused. Connect again.',
+          connect: { url: 'https://app.betahub.io/agent_auth', instructions: 'https://app.betahub.io/agents/setup.md' },
+        }),
+      }]);
+
+      await expect(validateToken('pat-expired')).rejects.toThrow(/Connect again.*agents\/setup\.md/s);
+    });
+
     it('should throw AuthenticationError when token is invalid', async () => {
       global.fetch = mockFetch([{
         ok: true,

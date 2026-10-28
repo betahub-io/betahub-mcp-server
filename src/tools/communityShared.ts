@@ -126,22 +126,22 @@ export function toCommunityToolError(error: unknown, action: string, notFound: s
         return new ApiError(
           `Failed to ${action}: a filter value is not valid for this project (unknown channel id or role name, ` +
           'or an over-long word). getSentimentOverview lists the valid channels.',
-          400, error.endpoint, detail
+          400, error.endpoint, detail, error.hint
         );
       case 401:
         return new ApiError(
           `Failed to ${action}: the token was not accepted. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
-          401, error.endpoint, detail
+          401, error.endpoint, detail, error.hint
         );
       case 403:
         return new ApiError(
           `Failed to ${action}: access denied${detail ? ` (${detail})` : ''}. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
-          403, error.endpoint, detail
+          403, error.endpoint, detail, error.hint
         );
       case 404:
         return new ApiError(
           detail && detail !== GENERIC_NOT_FOUND ? detail : notFound,
-          404, error.endpoint, detail
+          404, error.endpoint, detail, error.hint
         );
     }
   }

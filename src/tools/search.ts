@@ -86,7 +86,7 @@ export async function searchSuggestions({
         throw new NotFoundError('Project', projectId);
       }
       if (error.statusCode === 403) {
-        throw new AccessDeniedError('search feature requests in project', projectId);
+        throw new AccessDeniedError('search feature requests in project', projectId, error.hint);
       }
     }
     throw new Error(

@@ -266,6 +266,14 @@ describe('FindSimilarIssues Tool', () => {
       ).rejects.toThrow(NotFoundError);
     });
 
+    it('passes on what the backend tells the agent to do with a 403', async () => {
+      mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint', 'insufficient_scope',
+        'Tokens cannot do this; the user does it in BetaHub.'));
+
+      await expect(findSimilarIssues({ projectId: 'pr-private', issueId: 'g-123' }))
+        .rejects.toThrow('Tokens cannot do this; the user does it in BetaHub.');
+    });
+
     it('should handle 403 errors as AccessDeniedError mentioning developer-level access', async () => {
       mockClient.get.mockRejectedValue(new ApiError('API request failed: Forbidden', 403, 'endpoint'));
 

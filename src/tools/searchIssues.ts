@@ -103,7 +103,7 @@ export async function searchIssues({
         throw new NotFoundError('Project', projectId);
       }
       if (error.statusCode === 403) {
-        throw new AccessDeniedError('search issues in project', projectId);
+        throw new AccessDeniedError('search issues in project', projectId, error.hint);
       }
     }
     throw new Error(

@@ -3,6 +3,7 @@
  */
 
 import { config, getApiUrl } from '../config.js';
+import { agentHint } from './agentHint.js';
 import { ApiError, AuthenticationError } from '../errors.js';
 import { formatAuthHeader, getAuthConfig } from '../lib/auth.js';
 
@@ -40,11 +41,13 @@ export class BetaHubApiClient {
       });
 
       if (!response.ok) {
+        const { serverMessage, hint } = await readErrorBody(response);
         throw new ApiError(
           `API request failed: ${response.statusText}`,
           response.status,
           endpoint,
-          await readServerMessage(response)
+          serverMessage,
+          hint
         );
       }
 
@@ -81,13 +84,13 @@ export class BetaHubApiClient {
 }
 
 // Error bodies are best effort: a proxy or crash page is not JSON, and that must not mask the status.
-async function readServerMessage(response: Response): Promise<string | undefined> {
+async function readErrorBody(response: Response): Promise<{ serverMessage?: string; hint?: string }> {
   try {
     const body: unknown = await response.json();
     const message = (body as { error?: unknown } | null)?.error;
-    return typeof message === 'string' ? message : undefined;
+    return { serverMessage: typeof message === 'string' ? message : undefined, hint: agentHint(body) };
   } catch {
-    return undefined;
+    return {};
   }
 }
 

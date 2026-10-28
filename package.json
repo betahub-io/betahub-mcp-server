@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "build": "tsc && chmod +x ./build/index.js",
+    "dev:http": "npm run build:lambda && node scripts/local-http.mjs",
     "build:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node20 --format=esm --minify --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" --outfile=dist/lambda.mjs"
   },
   "files": [
