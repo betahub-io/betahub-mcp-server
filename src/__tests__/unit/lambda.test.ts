@@ -162,6 +162,17 @@ describe('Lambda Handler', () => {
     });
   });
 
+  // A header the transport sets must not be doubled in another case: Node sends both, and
+  // an MCP client then reads "application/json, application/json" and refuses to connect.
+  it('sends each response header once, whatever its case', async () => {
+    const result = await handler(createApiGatewayEvent());
+
+    expect(result.statusCode).toBe(200);
+    const names = Object.keys(result.headers).map((name) => name.toLowerCase());
+    expect(names.filter((name) => name === 'content-type')).toHaveLength(1);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
   describe('auth token threading', () => {
     it('should extract Bearer token from Authorization header', async () => {
       const event = createApiGatewayEvent({

@@ -108,6 +108,12 @@ function createMockResponse(): {
   return { res, getResult: () => resultPromise };
 }
 
+// HTTP header names are case-insensitive; the transport writes "Content-Type", the defaults
+// "content-type". Kept as two keys, both are sent and a client reads the values joined.
+function lowercaseKeys(headers: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]));
+}
+
 export async function handler(event: ApiGatewayEvent): Promise<ApiGatewayResult> {
   try {
     return await handleRequest(event);
@@ -199,7 +205,7 @@ async function handleRequest(event: ApiGatewayEvent): Promise<ApiGatewayResult> 
 
     return {
       statusCode: result.statusCode,
-      headers: { 'content-type': 'application/json', ...result.headers },
+      headers: { 'content-type': 'application/json', ...lowercaseKeys(result.headers) },
       body: result.body,
     };
   } finally {
