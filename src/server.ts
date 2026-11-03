@@ -4,6 +4,7 @@ import { tools } from './tools/index.js';
 import { isAuthenticated } from './lib/auth.js';
 import { createApiClient, type BetaHubApiClient } from './api/client.js';
 import { AuthenticationError } from './errors.js';
+import { withPlayerDataNote } from './lib/playerData.js';
 
 function getClientFromExtra(extra: { authInfo?: { token: string } }): BetaHubApiClient | undefined {
   const token = extra.authInfo?.token;
@@ -36,7 +37,7 @@ export function createServer(): McpServer {
   for (const [name, tool] of Object.entries(tools)) {
     server.registerTool(name, tool.definition, async (input: any, extra: any) => {
       requireAuth(extra);
-      return tool.handler(input, getClientFromExtra(extra));
+      return withPlayerDataNote(await tool.handler(input, getClientFromExtra(extra)));
     });
   }
 
