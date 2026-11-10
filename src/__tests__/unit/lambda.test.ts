@@ -88,6 +88,7 @@ describe('Lambda Handler', () => {
       expect(instructions).toContain('agent_feedback.json');
       expect(instructions).toContain('agents/setup.md');
       expect(instructions).toContain('exact link');
+      expect(instructions).toContain('never write the token out in a command');
     });
   });
 
