@@ -4,16 +4,32 @@
 
 import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
-import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
-import type { FeatureRequestsResponse } from '../types/betahub.js';
+import { NotFoundError, AccessDeniedError, ApiError, ValidationError } from '../errors.js';
+import type { FeatureRequest, FeatureRequestsResponse } from '../types/betahub.js';
 import type { ListSuggestionsInput, ToolResponse } from '../types/mcp.js';
+
+// The statuses BetaHub filters the list by (sort=all): the public workflow, plus duplicates for the team.
+const SUGGESTION_STATUS_FILTERS = [
+  'open', 'under_review', 'planned', 'started', 'completed', 'declined', 'duplicate',
+] as const;
+
+// A status filter without a sort lists every suggestion with that status.
+const STATUS_FILTER_SORT = 'all';
+const DEFAULT_SORT = 'top';
+
+// Lists of one status each (the moderation queue, rejected, muted, duplicates): another status leaves them empty.
+const QUEUE_SORTS: readonly string[] = ['moderation', 'rejected', 'muted', 'duplicates'];
 
 export const listSuggestionsInputSchema = {
   projectId: z.string().describe('The project ID to fetch feature requests from'),
   sort: z
     .enum(['top', 'new', 'all', 'moderation', 'rejected', 'muted', 'duplicates'])
     .optional()
-    .describe('Sort order for feature requests (default: top)'),
+    .describe(
+      'Which list (default: top). "moderation" is the queue of suggestions waiting for approval; "rejected", ' +
+      '"muted" and "duplicates" list those. These four list only for developers and moderators; others get an ' +
+      'empty list.'
+    ),
   page: z.number().int().min(1).optional().describe('Page number for pagination (default: 1)'),
   limit: z
     .number()
@@ -23,9 +39,13 @@ export const listSuggestionsInputSchema = {
     .optional()
     .describe('Number of items per page (max 25, default: 25)'),
   status: z
-    .enum(['pending', 'approved', 'rejected', 'in_progress', 'completed', 'duplicate'])
+    .enum(SUGGESTION_STATUS_FILTERS)
     .optional()
-    .describe('Filter feature requests by status'),
+    .describe(
+      'Filter by status. It narrows the chosen list; without sort it lists every suggestion with that status ' +
+      '(sort "all"). Not with "moderation", "rejected", "muted" or "duplicates". "duplicate" lists only with ' +
+      'sort "all", and only for users who can edit suggestions.'
+    ),
   createdAfter: z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), {
@@ -63,9 +83,28 @@ export const listSuggestionsDefinition = {
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 };
 
+// One suggestion as the tools return it; scoped_id is what the suggestion write tools take.
+export function formatSuggestion(fr: FeatureRequest) {
+  return {
+    id: fr.id,
+    scoped_id: fr.scoped_id,
+    title: fr.title,
+    description: fr.description,
+    status: fr.status,
+    votes: fr.votes,
+    voted: fr.voted,
+    is_duplicate: fr.is_duplicate,
+    duplicates_count: fr.duplicates_count,
+    user: fr.user,
+    created_at: fr.created_at,
+    updated_at: fr.updated_at,
+    url: fr.url,
+  };
+}
+
 export async function listSuggestions({
   projectId,
-  sort = 'top',
+  sort: requestedSort,
   page = 1,
   limit = 25,
   status,
@@ -76,9 +115,18 @@ export async function listSuggestions({
 }: ListSuggestionsInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
   const client = apiClient || getApiClient();
 
+  if (status && requestedSort && QUEUE_SORTS.includes(requestedSort)) {
+    throw new ValidationError(
+      `"status" cannot be combined with sort "${requestedSort}": that list holds suggestions of one status of its ` +
+      'own. Leave status out, or use sort "all".',
+      'status'
+    );
+  }
+  const sort = requestedSort ?? (status ? STATUS_FILTER_SORT : DEFAULT_SORT);
+
   try {
     const params = new URLSearchParams();
-    if (sort !== 'top') params.append('sort', sort);
+    if (sort !== DEFAULT_SORT) params.append('sort', sort);
     if (page !== 1) params.append('page', page.toString());
     if (status) params.append('status', status);
     if (createdAfter) params.append('created_after', createdAfter);
@@ -98,20 +146,7 @@ export async function listSuggestions({
       featureRequests = featureRequests.slice(0, limit);
     }
 
-    const formattedRequests = featureRequests.map((fr) => ({
-      id: fr.id,
-      title: fr.title,
-      description: fr.description,
-      status: fr.status,
-      votes: fr.votes,
-      voted: fr.voted,
-      is_duplicate: fr.is_duplicate,
-      duplicates_count: fr.duplicates_count,
-      user: fr.user,
-      created_at: fr.created_at,
-      updated_at: fr.updated_at,
-      url: fr.url,
-    }));
+    const formattedRequests = featureRequests.map(formatSuggestion);
 
     return {
       content: [{

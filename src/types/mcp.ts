@@ -19,7 +19,7 @@ export interface ListSuggestionsInput {
   sort?: 'top' | 'new' | 'all' | 'moderation' | 'rejected' | 'muted' | 'duplicates';
   page?: number;
   limit?: number;
-  status?: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'completed' | 'duplicate';
+  status?: 'open' | 'under_review' | 'planned' | 'started' | 'completed' | 'declined' | 'duplicate';
   createdAfter?: string;
   createdBefore?: string;
   updatedAfter?: string;
@@ -35,8 +35,9 @@ export interface SearchSuggestionsInput {
 
 export interface ListIssuesInput {
   projectId: string;
-  status?: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
-  priority?: 'low' | 'medium' | 'high' | 'critical';
+  status?: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix' | 'duplicate'
+    | 'pending_moderation';
+  priority?: IssuePriority;
   page?: number;
   perPage?: number;
   createdAfter?: string;
@@ -140,4 +141,81 @@ export interface ListSteamThreadsInput {
   query?: string;
   range?: 'd1' | 'd7' | 'd30' | 'all';
   page?: number;
+}
+
+export type IssuePriority = 'low' | 'medium' | 'high' | 'critical' | 'blocker';
+
+export interface UpdateIssueInput {
+  projectId: string;
+  issueId: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: IssuePriority;
+  assignedToId?: number | null;
+  releaseId?: number;
+  tagIds?: Array<string | number>;
+  customFields?: Record<string, unknown>;
+}
+
+// One bug, no other input: archive, unarchive, unmark duplicate.
+export interface IssueRefInput {
+  projectId: string;
+  issueId: string;
+}
+
+export interface MergeIssuesInput {
+  projectId: string;
+  targetIssueId: string;
+  duplicateIssueId: string;
+}
+
+export interface UndoMergeIssuesInput {
+  projectId: string;
+  targetIssueId: string;
+  mergedIssueId: string;
+  previousStatus: string;
+}
+
+export interface ResolveDuplicateSuggestionInput {
+  projectId: string;
+  issueId: string;
+  decision: 'confirm' | 'reject';
+}
+
+export interface BulkUpdateIssuesInput {
+  projectId: string;
+  issueIds: number[];
+  status?: string;
+  priority?: IssuePriority;
+  releaseId?: number;
+  assignedToId?: number | null;
+}
+
+// The public workflow a coding agent may set; moderation and duplicates have tools of their own.
+export type SuggestionWorkflowStatus = 'open' | 'under_review' | 'planned' | 'started' | 'completed' | 'declined';
+
+export interface SetSuggestionStatusInput {
+  projectId: string;
+  suggestionId: string;
+  status: SuggestionWorkflowStatus;
+}
+
+export interface ModerateSuggestionInput {
+  projectId: string;
+  suggestionId: string;
+  decision: 'approve' | 'reject' | 'restore';
+}
+
+export interface MergeSuggestionsInput {
+  projectId: string;
+  targetSuggestionId: string;
+  duplicateSuggestionId: string;
+}
+
+export interface UndoMergeSuggestionsInput {
+  projectId: string;
+  targetSuggestionId: string;
+  mergedSuggestionId: string;
+  previousStatus: string;
 }

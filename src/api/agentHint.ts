@@ -9,7 +9,7 @@ interface ErrorBody {
   error?: unknown;
   message?: unknown;
   required_scopes?: unknown;
-  consent?: { url?: unknown; intent?: unknown; instructions?: unknown } | null;
+  consent?: { url?: unknown; intent?: unknown; instructions?: unknown; organization?: { name?: unknown } | null } | null;
   connect?: { url?: unknown; instructions?: unknown } | null;
   upgrade_url?: unknown;
   help_url?: unknown;
@@ -43,10 +43,12 @@ export function agentHint(body: unknown): string | undefined {
   if (consentUrl) {
     const instructions = text(b.consent?.instructions);
     const intent = text(b.consent?.intent) ?? DEFAULT_CONSENT_INTENT;
+    const organization = text(b.consent?.organization?.name);
     parts.push(
       `Ask the user for it: POST ${consentUrl} with your token and ` +
-      `{"agent_name": "<your product (this machine)>", "intent": "${intent}"}, ` +
-      `then the user approves in the browser${instructions ? ` (${instructions})` : ''}.`
+      `{"agent_name": "<your product and this computer's name, e.g. \"Claude Code (MacBook)\">", "intent": "${intent}"}, ` +
+      `then the user approves in the browser${instructions ? ` (${instructions})` : ''}` +
+      `${organization ? `; tell them to tick "${organization}" there` : ''}.`
     );
   } else if (b.error === INSUFFICIENT_SCOPE) {
     // A Full access token may still do it; no scoped token, an agent's included, can get it.

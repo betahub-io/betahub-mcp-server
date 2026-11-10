@@ -32,7 +32,7 @@ export function createFeatureRequest(overrides?: Partial<FeatureRequest>): Featu
     id: 'fr-test-456',
     title: 'Test Feature Request',
     description: 'This is a test feature request',
-    status: 'pending',
+    status: 'open',
     votes: 10,
     voted: false,
     is_duplicate: false,
@@ -287,6 +287,27 @@ export function createIssueAttachment(
     url: null,
     content_type: null,
     ...defaultsByType[type],
+    ...overrides,
+  };
+}
+
+// A suggestion's JSON as the backend answers a write: the feature request partial, attachments included.
+export function suggestionJson(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 5521,
+    scoped_id: '12',
+    title: 'Add a photo mode',
+    description: 'Let me hide the HUD and move the camera.',
+    status: 'planned',
+    created_at: '2026-11-01T00:00:00Z',
+    updated_at: '2026-11-10T00:00:00Z',
+    user: { id: 9, name: 'Player' },
+    votes: 14,
+    voted: false,
+    is_duplicate: false,
+    duplicates_count: 0,
+    url: 'https://app.betahub.io/projects/pr-1/feature_requests/12',
+    attachments: [{ url: 'https://cdn.example/mock.png' }],
     ...overrides,
   };
 }

@@ -47,7 +47,7 @@ export const server = setupServer(
           id: 'fr-test-456',
           title: 'Test Feature Request',
           description: 'This is a test feature request',
-          status: 'pending',
+          status: 'open',
           votes: 10
         }),
         createFeatureRequest({

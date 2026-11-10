@@ -9,7 +9,7 @@ import { formatAuthHeader, getAuthConfig } from '../lib/auth.js';
 import { BACKEND_SESSION_HEADER } from '../lib/agentSession.js';
 
 export interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: any;
   headers?: Record<string, string>;
 }
@@ -85,6 +85,10 @@ export class BetaHubApiClient {
 
   async post<T>(endpoint: string, body?: any): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body });
+  }
+
+  async patch<T>(endpoint: string, body?: any): Promise<T> {
+    return this.request<T>(endpoint, { method: 'PATCH', body });
   }
 }
 

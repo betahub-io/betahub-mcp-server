@@ -21,7 +21,7 @@ const MAX_FILTER_TEXT_LENGTH = 100;
 const MAX_ROLE_NAMES = 50;
 
 // The backend's generic 404 body, as opposed to a specific explanation such as "not connected".
-const GENERIC_NOT_FOUND = 'Not found';
+export const GENERIC_NOT_FOUND = 'Not found';
 
 export const COMMUNITY_ACCESS_REQUIREMENTS =
   'Sentiments and Steam discussions need a Personal Access Token (pat-) whose user has the ' +

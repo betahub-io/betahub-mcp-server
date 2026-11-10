@@ -45,6 +45,8 @@ describe('Issues Tool', () => {
       expect(() => schema.parse({ projectId: 'pr-123', status: 'resolved' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'closed' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'wont_fix' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', status: 'duplicate' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', status: 'pending_moderation' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', status: 'invalid' })).toThrow();
     });
 
@@ -55,6 +57,7 @@ describe('Issues Tool', () => {
       expect(() => schema.parse({ projectId: 'pr-123', priority: 'medium' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', priority: 'high' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', priority: 'critical' })).not.toThrow();
+      expect(() => schema.parse({ projectId: 'pr-123', priority: 'blocker' })).not.toThrow();
       expect(() => schema.parse({ projectId: 'pr-123', priority: 'invalid' })).toThrow();
     });
 
@@ -96,6 +99,22 @@ describe('Issues Tool', () => {
       });
 
       expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?status=in_progress');
+    });
+
+    it('lists the possible duplicates waiting for the team (pending_moderation)', async () => {
+      mockClient.get.mockResolvedValue(createIssuesResponse(1));
+
+      await listIssues({ projectId: 'pr-test', status: 'pending_moderation' });
+
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?status=pending_moderation');
+    });
+
+    it('explains the pending_moderation filter and where to settle it', () => {
+      const description = listIssuesInputSchema.status.description ?? '';
+
+      expect(description).toContain('pending_moderation');
+      expect(description).toContain('resolveDuplicateSuggestion');
+      expect(description).toContain('developers only');
     });
 
     it('should fetch issues with priority filter', async () => {

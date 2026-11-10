@@ -29,6 +29,20 @@ describe('agentHint', () => {
     expect(hint).not.toContain('scoped token cannot');
   });
 
+  // Found in a real-agent test (2026-11-10): the agent could not tell the user which organization to
+  // tick, and took the name placeholder literally ("Claude Code (this machine)").
+  it("names the organization to tick, and asks for the agent's real name", () => {
+    const hint = agentHint({
+      error: 'insufficient_scope',
+      required_scopes: ['bugs.update'],
+      consent: { url: CONSENT_URL, intent: 'work', organization: { id: 'org-1', name: 'Side Studio' } },
+    });
+
+    expect(hint).toContain('tick "Side Studio"');
+    expect(hint).not.toContain('this machine');
+    expect(hint).toContain('e.g. "Claude Code (MacBook)"');
+  });
+
   it('falls back to setup and leaves out missing instructions', () => {
     const hint = agentHint({ error: 'insufficient_scope', consent: { url: CONSENT_URL } });
 

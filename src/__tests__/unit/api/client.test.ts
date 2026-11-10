@@ -309,6 +309,28 @@ describe('API Client', () => {
         );
       });
     });
+
+    describe('patch method', () => {
+      it('should make PATCH request with a JSON body', async () => {
+        const body = { issue: { status: 'resolved' } };
+        global.fetch = mockFetch([{
+          ok: true,
+          json: () => Promise.resolve({ id: 74 })
+        }]);
+
+        const result = await client.patch('projects/pr-1/issues/74.json', body);
+
+        expect(result).toEqual({ id: 74 });
+        expect(global.fetch).toHaveBeenCalledWith(
+          'https://app.betahub.io/projects/pr-1/issues/74.json',
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(body)
+          })
+        );
+      });
+    });
   });
 
   describe('Factory functions', () => {

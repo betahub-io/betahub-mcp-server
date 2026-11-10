@@ -8,15 +8,19 @@ import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { IssuesResponse } from '../types/betahub.js';
 import type { ListIssuesInput, ToolResponse } from '../types/mcp.js';
 import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
+import { ISSUE_PRIORITIES } from './writeShared.js';
 
 export const listIssuesInputSchema = {
   projectId: z.string().describe('The project ID to fetch issues from'),
   status: z
-    .enum(['open', 'in_progress', 'needs_more_info', 'resolved', 'closed', 'wont_fix'])
+    .enum(['open', 'in_progress', 'needs_more_info', 'resolved', 'closed', 'wont_fix', 'duplicate', 'pending_moderation'])
     .optional()
-    .describe('Filter issues by status'),
+    .describe(
+      'Filter issues by status. pending_moderation: reports BetaHub thinks may duplicate another, waiting for ' +
+      "the team's call (see resolveDuplicateSuggestion); visible to developers only."
+    ),
   priority: z
-    .enum(['low', 'medium', 'high', 'critical'])
+    .enum(ISSUE_PRIORITIES)
     .optional()
     .describe('Filter issues by priority'),
   page: z.number().int().min(1).optional().describe('Page number for pagination (default: 1)'),

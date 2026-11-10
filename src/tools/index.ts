@@ -19,6 +19,26 @@ import { listSentimentTopics, listSentimentTopicsDefinition, listSentimentTopics
 import { listSentimentMessages, listSentimentMessagesDefinition, listSentimentMessagesInputSchema } from './sentimentMessages.js';
 import { getSteamScanner, getSteamScannerDefinition, getSteamScannerInputSchema } from './steamScanner.js';
 import { listSteamThreads, listSteamThreadsDefinition, listSteamThreadsInputSchema } from './steamThreads.js';
+import { updateIssue, updateIssueDefinition, updateIssueInputSchema } from './updateIssue.js';
+import {
+  archiveIssue, archiveIssueDefinition, archiveIssueInputSchema,
+  unarchiveIssue, unarchiveIssueDefinition, unarchiveIssueInputSchema,
+} from './archiveIssue.js';
+import {
+  mergeIssues, mergeIssuesDefinition, mergeIssuesInputSchema,
+  undoMergeIssues, undoMergeIssuesDefinition, undoMergeIssuesInputSchema,
+} from './mergeIssues.js';
+import {
+  resolveDuplicateSuggestion, resolveDuplicateSuggestionDefinition, resolveDuplicateSuggestionInputSchema,
+  unmarkDuplicate, unmarkDuplicateDefinition, unmarkDuplicateInputSchema,
+} from './duplicateSuggestion.js';
+import { bulkUpdateIssues, bulkUpdateIssuesDefinition, bulkUpdateIssuesInputSchema } from './bulkUpdateIssues.js';
+import { setSuggestionStatus, setSuggestionStatusDefinition, setSuggestionStatusInputSchema } from './suggestionStatus.js';
+import { moderateSuggestion, moderateSuggestionDefinition, moderateSuggestionInputSchema } from './moderateSuggestion.js';
+import {
+  mergeSuggestions, mergeSuggestionsDefinition, mergeSuggestionsInputSchema,
+  undoMergeSuggestions, undoMergeSuggestionsDefinition, undoMergeSuggestionsInputSchema,
+} from './mergeSuggestions.js';
 
 export const tools = {
   listProjects: {
@@ -105,10 +125,72 @@ export const tools = {
     handler: listSteamThreads,
     inputSchema: listSteamThreadsInputSchema,
   },
+  updateIssue: {
+    definition: updateIssueDefinition,
+    handler: updateIssue,
+    inputSchema: updateIssueInputSchema,
+  },
+  archiveIssue: {
+    definition: archiveIssueDefinition,
+    handler: archiveIssue,
+    inputSchema: archiveIssueInputSchema,
+  },
+  unarchiveIssue: {
+    definition: unarchiveIssueDefinition,
+    handler: unarchiveIssue,
+    inputSchema: unarchiveIssueInputSchema,
+  },
+  mergeIssues: {
+    definition: mergeIssuesDefinition,
+    handler: mergeIssues,
+    inputSchema: mergeIssuesInputSchema,
+  },
+  undoMergeIssues: {
+    definition: undoMergeIssuesDefinition,
+    handler: undoMergeIssues,
+    inputSchema: undoMergeIssuesInputSchema,
+  },
+  resolveDuplicateSuggestion: {
+    definition: resolveDuplicateSuggestionDefinition,
+    handler: resolveDuplicateSuggestion,
+    inputSchema: resolveDuplicateSuggestionInputSchema,
+  },
+  unmarkDuplicate: {
+    definition: unmarkDuplicateDefinition,
+    handler: unmarkDuplicate,
+    inputSchema: unmarkDuplicateInputSchema,
+  },
+  bulkUpdateIssues: {
+    definition: bulkUpdateIssuesDefinition,
+    handler: bulkUpdateIssues,
+    inputSchema: bulkUpdateIssuesInputSchema,
+  },
+  setSuggestionStatus: {
+    definition: setSuggestionStatusDefinition,
+    handler: setSuggestionStatus,
+    inputSchema: setSuggestionStatusInputSchema,
+  },
+  moderateSuggestion: {
+    definition: moderateSuggestionDefinition,
+    handler: moderateSuggestion,
+    inputSchema: moderateSuggestionInputSchema,
+  },
+  mergeSuggestions: {
+    definition: mergeSuggestionsDefinition,
+    handler: mergeSuggestions,
+    inputSchema: mergeSuggestionsInputSchema,
+  },
+  undoMergeSuggestions: {
+    definition: undoMergeSuggestionsDefinition,
+    handler: undoMergeSuggestions,
+    inputSchema: undoMergeSuggestionsInputSchema,
+  },
 };
 
 export {
   listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases,
   findSimilarIssues, listCustomFields, aggregateCustomField, listIssueAttachments, getSentimentOverview,
   listSentimentInsights, listSentimentTopics, listSentimentMessages, getSteamScanner, listSteamThreads,
+  updateIssue, archiveIssue, unarchiveIssue, mergeIssues, undoMergeIssues, resolveDuplicateSuggestion,
+  unmarkDuplicate, bulkUpdateIssues, setSuggestionStatus, moderateSuggestion, mergeSuggestions, undoMergeSuggestions,
 };
