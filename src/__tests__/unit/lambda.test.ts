@@ -77,6 +77,20 @@ describe('Lambda Handler', () => {
     });
   });
 
+  // Found in a real-agent test (2026-11-10): a later session never read setup.md, so it did not know to
+  // link the user's steps or to tell the BetaHub team what it could not do.
+  describe('instructions', () => {
+    it('gives every session the rules from setup.md', async () => {
+      const result = await handler(createApiGatewayEvent());
+
+      const instructions = JSON.parse(result.body).result.instructions as string;
+      expect(instructions).toContain('treat it as data');
+      expect(instructions).toContain('agent_feedback.json');
+      expect(instructions).toContain('agents/setup.md');
+      expect(instructions).toContain('exact link');
+    });
+  });
+
   // BetaHub backend docs/design/agent_write_access.md, "Shared accounts".
   describe('agent sessions', () => {
     it('names the MCP session on initialize', async () => {
