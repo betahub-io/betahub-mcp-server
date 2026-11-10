@@ -29,7 +29,8 @@ export const undoMergeSuggestionsInputSchema = {
   projectId: projectIdField,
   targetSuggestionId: suggestionIdField('The suggestion the duplicate was merged into'),
   mergedSuggestionId: undoIdField('undo.merged_feature_request_id from the mergeSuggestions result'),
-  previousStatus: z.string().min(1).describe('undo.previous_status from the mergeSuggestions result'),
+  previousStatus: z.string().min(1).optional()
+    .describe('undo.previous_status from the mergeSuggestions result; leave it out and BetaHub restores the status it recorded before the merge'),
 };
 
 export const mergeSuggestionsDefinition = {

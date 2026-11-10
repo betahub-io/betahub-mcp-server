@@ -57,6 +57,14 @@ describe('mergeSuggestions / undoMergeSuggestions', () => {
     expect(result.note).toContain('undoMergeSuggestions');
   });
 
+  it('undoes a merge without the previous status', async () => {
+    const { client, sent } = clientAnswering(200, { suggestion: 'g-34', status: 'planned' });
+
+    await undoMergeSuggestions({ projectId: 'pr-1', targetSuggestionId: '12', mergedSuggestionId: 'g-34' }, client);
+
+    expect(sent().body).toEqual({ merged_feature_request_id: 'g-34' });
+  });
+
   it('undoes a merge with the values mergeSuggestions returned', async () => {
     const { client, sent } = clientAnswering(200, { suggestion: 'g-34', status: 'open' });
 

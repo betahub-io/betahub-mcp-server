@@ -29,7 +29,8 @@ export const undoMergeIssuesInputSchema = {
   projectId: projectIdField,
   targetIssueId: scopedIdField('The bug the duplicate was merged into'),
   mergedIssueId: undoIdField('undo.merged_issue_id from the mergeIssues result'),
-  previousStatus: z.string().min(1).describe('undo.previous_status from the mergeIssues result'),
+  previousStatus: z.string().min(1).optional()
+    .describe('undo.previous_status from the mergeIssues result; leave it out and BetaHub restores the status it recorded before the merge'),
 };
 
 export const mergeIssuesDefinition = {

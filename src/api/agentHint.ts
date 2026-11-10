@@ -13,6 +13,7 @@ interface ErrorBody {
   connect?: { url?: unknown; instructions?: unknown } | null;
   upgrade_url?: unknown;
   help_url?: unknown;
+  url?: unknown;
 }
 
 const INSUFFICIENT_SCOPE = 'insufficient_scope';
@@ -51,8 +52,11 @@ export function agentHint(body: unknown): string | undefined {
       `Ask the user for it: POST ${consentUrl} with your token and ` +
       `{"agent_name": "<your product and this computer's name, e.g. \"Claude Code (MacBook)\">", "intent": "${intent}"}, ` +
       `then the user approves in the browser${instructions ? ` (${instructions})` : ''}` +
-      `${organization ? `; tell them to tick "${organization}" there` : ''}.`
+      `${organization ? `; tell them to tick "${organization}" there` : ''}. ` +
+      'Your token stays the same: once they approve, call the tool again.'
     );
+  } else if (text(b.url)) {
+    parts.push(`Link for the user: ${text(b.url)}`);
   } else if (b.error === INSUFFICIENT_SCOPE) {
     // A Full access token may still do it; no scoped token, an agent's included, can get it.
     parts.push('A scoped token cannot get this; the user does it in BetaHub.');

@@ -87,6 +87,15 @@ describe('mergeIssues / undoMergeIssues', () => {
     expect(result).toEqual({ project_id: 'pr-1', issue: '75', status: 'open' });
   });
 
+  // A later session does not know the status before the merge: BetaHub restores the one it recorded.
+  it('undoes a merge without the previous status', async () => {
+    const { client, sent } = clientAnswering(200, { issue: '75', status: 'in_progress' });
+
+    await undoMergeIssues({ projectId: 'pr-1', targetIssueId: '74', mergedIssueId: '75' }, client);
+
+    expect(sent().body).toEqual({ merged_issue_id: '75' });
+  });
+
   it("passes on the backend's reason for refusing a merge", async () => {
     const { client } = clientAnswering(422, { error: 'Cannot merge with duplicate' });
 

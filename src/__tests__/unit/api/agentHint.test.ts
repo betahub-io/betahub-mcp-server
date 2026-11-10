@@ -47,7 +47,23 @@ describe('agentHint', () => {
     const hint = agentHint({ error: 'insufficient_scope', consent: { url: CONSENT_URL } });
 
     expect(hint).toContain('"intent": "setup"');
-    expect(hint).toMatch(/approves in the browser\.$/);
+    expect(hint).toContain('approves in the browser. Your token stays the same');
+  });
+
+  // Backend 2026-11-10: a refusal no consent can lift says why and gives the page for the user.
+  it('hands the user the page when no consent can help', () => {
+    const hint = agentHint({ error: 'insufficient_scope', required_scopes: null,
+      message: 'Coding agents cannot do this in BetaHub yet. Give the user this link to do it there.',
+      url: 'https://app.betahub.io/projects/pr-1/tickets' });
+
+    expect(hint).toBe('Coding agents cannot do this in BetaHub yet. Give the user this link to do it there. ' +
+      'Link for the user: https://app.betahub.io/projects/pr-1/tickets');
+  });
+
+  it('says the token stays the same after the user approves more', () => {
+    const hint = agentHint({ error: 'insufficient_scope', consent: { url: CONSENT_URL, intent: 'work' } });
+
+    expect(hint).toContain('Your token stays the same: once they approve, call the tool again.');
   });
 
   it('names the missing keys and says a scoped token cannot get them without a consent', () => {
