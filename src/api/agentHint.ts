@@ -9,7 +9,9 @@ interface ErrorBody {
   error?: unknown;
   message?: unknown;
   required_scopes?: unknown;
-  consent?: { url?: unknown; intent?: unknown; instructions?: unknown; organization?: { name?: unknown } | null } | null;
+  consent?: {
+    url?: unknown; intent?: unknown; instructions?: unknown; organization?: { id?: unknown; name?: unknown } | null;
+  } | null;
   connect?: { url?: unknown; instructions?: unknown } | null;
   upgrade_url?: unknown;
   help_url?: unknown;
@@ -48,11 +50,14 @@ export function agentHint(body: unknown): string | undefined {
     const instructions = text(b.consent?.instructions);
     const intent = text(b.consent?.intent) ?? DEFAULT_CONSENT_INTENT;
     const organization = text(b.consent?.organization?.name);
+    // The backend ticks the organization it is sent on the consent page.
+    const organizationId = text(b.consent?.organization?.id);
     parts.push(
       `Ask the user for it: POST ${consentUrl} with your token and ` +
-      `{"agent_name": "<your product and this computer's name, e.g. \"Claude Code (MacBook)\">", "intent": "${intent}"}, ` +
+      `{"agent_name": "<your product and this computer's name, e.g. \"Claude Code (MacBook)\">", "intent": "${intent}"` +
+      `${organizationId ? `, "organization_id": "${organizationId}"` : ''}}, ` +
       `then the user approves in the browser${instructions ? ` (${instructions})` : ''}` +
-      `${organization ? `; tell them to tick "${organization}" there` : ''}. ` +
+      `${organization ? `; "${organization}" is ticked for them there` : ''}. ` +
       'Your token stays the same: once they approve, call the tool again.'
     );
   } else if (text(b.url)) {

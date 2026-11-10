@@ -38,7 +38,8 @@ describe('agentHint', () => {
       consent: { url: CONSENT_URL, intent: 'work', organization: { id: 'org-1', name: 'Side Studio' } },
     });
 
-    expect(hint).toContain('tick "Side Studio"');
+    expect(hint).toContain('"organization_id": "org-1"');
+    expect(hint).toContain('"Side Studio" is ticked for them');
     expect(hint).not.toContain('this machine');
     expect(hint).toContain('e.g. "Claude Code (MacBook)"');
   });
