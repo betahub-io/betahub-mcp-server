@@ -6,10 +6,13 @@ import { createApiClient, type BetaHubApiClient } from './api/client.js';
 import { AuthenticationError } from './errors.js';
 import { withPlayerDataNote } from './lib/playerData.js';
 
-function getClientFromExtra(extra: { authInfo?: { token: string } }): BetaHubApiClient | undefined {
+function getClientFromExtra(
+  extra: { authInfo?: { token: string; extra?: { agentSession?: unknown } } }
+): BetaHubApiClient | undefined {
   const token = extra.authInfo?.token;
-  if (token) return createApiClient(token);
-  return undefined;
+  if (!token) return undefined;
+  const session = extra.authInfo?.extra?.agentSession;
+  return createApiClient(token, typeof session === 'string' ? session : undefined);
 }
 
 function requireAuth(extra: { authInfo?: { token: string } }): void {

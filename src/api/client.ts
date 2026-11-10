@@ -6,6 +6,7 @@ import { config, getApiUrl } from '../config.js';
 import { agentHint } from './agentHint.js';
 import { ApiError, AuthenticationError } from '../errors.js';
 import { formatAuthHeader, getAuthConfig } from '../lib/auth.js';
+import { BACKEND_SESSION_HEADER } from '../lib/agentSession.js';
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -15,9 +16,12 @@ export interface RequestOptions {
 
 export class BetaHubApiClient {
   private token: string;
+  private agentSession?: string;
 
-  constructor(token?: string) {
+  /** `agentSession`: the MCP session the call comes from, so the backend can tell sessions apart. */
+  constructor(token?: string, agentSession?: string) {
     this.token = token || getAuthConfig().token;
+    this.agentSession = agentSession;
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -26,6 +30,7 @@ export class BetaHubApiClient {
     const headers: Record<string, string> = {
       'User-Agent': config.api.userAgent,
       'Authorization': formatAuthHeader(this.token),
+      ...(this.agentSession ? { [BACKEND_SESSION_HEADER]: this.agentSession } : {}),
       ...options.headers,
     };
 
@@ -104,6 +109,6 @@ export function getApiClient(): BetaHubApiClient {
   return defaultClient;
 }
 
-export function createApiClient(token: string): BetaHubApiClient {
-  return new BetaHubApiClient(token);
+export function createApiClient(token: string, agentSession?: string): BetaHubApiClient {
+  return new BetaHubApiClient(token, agentSession);
 }

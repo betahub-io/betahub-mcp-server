@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'node:http';
 import * as Sentry from '@sentry/aws-serverless';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { agentSessionFor, isInitialize, MCP_SESSION_HEADER } from './lib/agentSession.js';
 import { createServer } from './server.js';
 
 // Reporting is opt-in via SENTRY_DSN, supplied as a Lambda environment variable — no DSN
@@ -48,18 +49,21 @@ function extractToken(headers: Record<string, string | undefined>): string | und
   return auth;
 }
 
+type MockAuth = { token: string; clientId: string; scopes: string[]; extra?: { agentSession?: string } };
+
 function createMockRequest(
   method: string,
   headers: Record<string, string | undefined>,
   token?: string,
-): IncomingMessage & { auth?: { token: string; clientId: string; scopes: string[] } } {
+  agentSession?: string,
+): IncomingMessage & { auth?: MockAuth } {
   const req = {
     method,
     headers: headers as Record<string, string>,
-  } as IncomingMessage & { auth?: { token: string; clientId: string; scopes: string[] } };
+  } as IncomingMessage & { auth?: MockAuth };
 
   if (token) {
-    req.auth = { token, clientId: '', scopes: [] };
+    req.auth = { token, clientId: '', scopes: [], extra: agentSession ? { agentSession } : undefined };
   }
 
   return req;
@@ -196,16 +200,20 @@ async function handleRequest(event: ApiGatewayEvent): Promise<ApiGatewayResult> 
   try {
     await server.connect(transport);
 
-    const req = createMockRequest(method, event.headers, token);
+    const agentSession = agentSessionFor(parsedBody, event.headers);
+    const req = createMockRequest(method, event.headers, token, agentSession);
     const { res, getResult } = createMockResponse();
 
     await transport.handleRequest(req, res, parsedBody);
 
     const result = await getResult();
+    const headers: Record<string, string> = { 'content-type': 'application/json', ...lowercaseKeys(result.headers) };
+    // The client sends it back on every request, so the backend can tell this session from others.
+    if (agentSession && isInitialize(parsedBody)) headers[MCP_SESSION_HEADER] = agentSession;
 
     return {
       statusCode: result.statusCode,
-      headers: { 'content-type': 'application/json', ...lowercaseKeys(result.headers) },
+      headers,
       body: result.body,
     };
   } finally {

@@ -97,6 +97,17 @@ describe('API Client', () => {
         }
       });
 
+      it('names the MCP session it calls from, so the backend can tell sessions apart', async () => {
+        global.fetch = mockFetch([{ ok: true, json: () => Promise.resolve({}) }, { ok: true, json: () => Promise.resolve({}) }]);
+
+        await new BetaHubApiClient('pat-test-token-123', 'sess-1').get('projects.json');
+        await client.get('projects.json');
+
+        const calls = (global.fetch as any).mock.calls;
+        expect(calls[0][1].headers['X-Agent-Session']).toBe('sess-1');
+        expect(calls[1][1].headers).not.toHaveProperty('X-Agent-Session');
+      });
+
       it("keeps the server's explanation from a JSON error body", async () => {
         global.fetch = mockFetch([{
           ok: false,

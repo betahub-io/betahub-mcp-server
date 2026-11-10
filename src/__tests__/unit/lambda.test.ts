@@ -77,6 +77,30 @@ describe('Lambda Handler', () => {
     });
   });
 
+  // BetaHub backend docs/design/agent_write_access.md, "Shared accounts".
+  describe('agent sessions', () => {
+    it('names the MCP session on initialize', async () => {
+      const result = await handler(createApiGatewayEvent());
+
+      expect(result.statusCode).toBe(200);
+      expect(result.headers['mcp-session-id']).toMatch(/^[0-9a-f-]{36}$/);
+    });
+
+    it('forwards the session the client sends back to BetaHub', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve([]) });
+      const event = createApiGatewayEvent({
+        headers: { 'mcp-session-id': 'sess-1', 'mcp-protocol-version': '2025-03-26' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'listProjects', arguments: {} } }),
+      });
+
+      const result = await handler(event);
+
+      expect(result.headers['mcp-session-id']).toBeUndefined();
+      const [, init] = (global.fetch as any).mock.calls[0];
+      expect(init.headers['X-Agent-Session']).toBe('sess-1');
+    });
+  });
+
   describe('authentication', () => {
     it('should return 401 when no Authorization header is provided', async () => {
       const event = createApiGatewayEvent({
