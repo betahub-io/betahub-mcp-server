@@ -60,9 +60,9 @@ describe('agentHint', () => {
 
   it('points a dead token at the instructions, or at the start endpoint without them', () => {
     expect(agentHint({ connect: { url: CONSENT_URL, instructions: INSTRUCTIONS } }))
-      .toBe(`To reconnect, follow ${INSTRUCTIONS}, then replace the token in your MCP config.`);
+      .toBe(`To reconnect, follow ${INSTRUCTIONS}, then replace the token in your MCP config. Your BetaHub tools pick up a new token only in a new session: tell the user, and until then call the API with it.`);
     expect(agentHint({ connect: { url: CONSENT_URL } }))
-      .toBe(`To reconnect, follow ${CONSENT_URL}, then replace the token in your MCP config.`);
+      .toBe(`To reconnect, follow ${CONSENT_URL}, then replace the token in your MCP config. Your BetaHub tools pick up a new token only in a new session: tell the user, and until then call the API with it.`);
   });
 
   it('skips an upgrade page a non-admin does not get', () => {

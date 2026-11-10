@@ -36,7 +36,10 @@ export function agentHint(body: unknown): string | undefined {
 
   const connectUrl = text(b.connect?.url);
   if (connectUrl) {
-    parts.push(`To reconnect, follow ${text(b.connect?.instructions) ?? connectUrl}, then replace the token in your MCP config.`);
+    parts.push(
+      `To reconnect, follow ${text(b.connect?.instructions) ?? connectUrl}, then replace the token in your MCP config. ` +
+      'Your BetaHub tools pick up a new token only in a new session: tell the user, and until then call the API with it.'
+    );
   }
 
   const consentUrl = text(b.consent?.url);
