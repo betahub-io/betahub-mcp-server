@@ -3,7 +3,7 @@ import type { Issue } from '../types/betahub.js';
 export const ISSUE_FIELDS = [
   'id', 'scoped_id', 'title', 'description', 'status', 'priority', 'score',
   'steps_to_reproduce', 'assigned_to', 'reported_by',
-  'potential_duplicate', 'created_at', 'updated_at', 'url',
+  'potential_duplicate', 'created_at', 'updated_at', 'url', 'heat', 'peak_heat',
 ] as const;
 
 export type IssueField = typeof ISSUE_FIELDS[number];
