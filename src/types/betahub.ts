@@ -96,6 +96,9 @@ export interface Issue {
   // The other bug, nested whole: set on a duplicate and on a possible one (pending_moderation).
   potential_duplicate?: any;
   url: string;
+  // How much attention the bug needs now; compare only within one project.
+  heat?: number;
+  peak_heat?: number | null;
   token?: string;
 }
 

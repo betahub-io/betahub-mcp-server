@@ -33,6 +33,11 @@ export interface SearchSuggestionsInput {
   scopedId?: string;
 }
 
+// Orders issues.json offers: `id` reads every bug once, `heat` puts the hottest first.
+export const ISSUE_LIST_SORTS = ['id', 'heat'] as const;
+export type IssueListSort = typeof ISSUE_LIST_SORTS[number];
+export const DEFAULT_ISSUE_LIST_SORT: IssueListSort = 'id';
+
 export interface ListIssuesInput {
   projectId: string;
   status?: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix' | 'duplicate'
@@ -45,6 +50,7 @@ export interface ListIssuesInput {
   updatedAfter?: string;
   updatedBefore?: string;
   tagIds?: string;
+  sort?: IssueListSort;
   fields?: string[];
   maxFieldLength?: number;
 }

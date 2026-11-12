@@ -103,9 +103,11 @@ Lists issues (bug reports) from a specific BetaHub project.
 - `priority` (optional): Filter by priority - `low`, `medium`, `high`, `critical`
 - `page` (optional): Page number for pagination (default: 1)
 - `perPage` (optional): Number of items per page, max 100 (default: 20)
+- `sort` (optional): `id` (default, every issue once across pages) or `heat` (hottest first, newest first among equal heat)
 
 **Response:** Returns issue information including:
 - Issue details (title, description, status, priority)
+- Heat and peak heat (how much attention the issue needs now; compare within one project)
 - Steps to reproduce and severity score
 - Assignment and reporter information
 - Pagination metadata
@@ -257,6 +259,16 @@ listIssues({
   "projectId": "pr-0690627851",
   "status": "in_progress",
   "priority": "high"
+})
+```
+
+```bash
+# Get the 10 open bugs that need attention most
+listIssues({
+  "projectId": "pr-0690627851",
+  "status": "open",
+  "sort": "heat",
+  "perPage": 10
 })
 ```
 
