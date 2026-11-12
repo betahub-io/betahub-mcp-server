@@ -161,6 +161,35 @@ describe('Issues Tool', () => {
       expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?page=3&per_page=30&status=open&priority=critical');
     });
 
+    it('asks for the hottest issues first with sort=heat', async () => {
+      mockClient.get.mockResolvedValue(createIssuesResponse(2));
+
+      const result = await listIssues({ projectId: 'pr-test', sort: 'heat' });
+
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json?sort=heat');
+      expect(JSON.parse(result.content[0].text).filters.sort).toBe('heat');
+    });
+
+    it('leaves sort out for the default id order', async () => {
+      mockClient.get.mockResolvedValue(createIssuesResponse(1));
+
+      await listIssues({ projectId: 'pr-test', sort: 'id' });
+
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/issues.json');
+    });
+
+    it('returns heat and peak_heat of each issue', async () => {
+      const response = createIssuesResponse(1);
+      response.issues[0] = { ...response.issues[0], heat: 37, peak_heat: 52 };
+      mockClient.get.mockResolvedValue(response);
+
+      const result = await listIssues({ projectId: 'pr-test' });
+
+      const [issue] = JSON.parse(result.content[0].text).issues;
+      expect(issue.heat).toBe(37);
+      expect(issue.peak_heat).toBe(52);
+    });
+
     it('should handle 404 errors as NotFoundError', async () => {
       mockClient.get.mockRejectedValue(new ApiError('API request failed: Not Found', 404, 'endpoint'));
 
@@ -295,6 +324,14 @@ describe('Issues Tool', () => {
         projectId: 'pr-123',
         fields: ['id', 'invalid_field'],
       })).toThrow();
+    });
+
+    it('offers sort by id or heat only', () => {
+      const schema = z.object(listIssuesInputSchema);
+
+      expect(schema.safeParse({ projectId: 'pr-test', sort: 'heat' }).success).toBe(true);
+      expect(schema.safeParse({ projectId: 'pr-test', sort: 'id' }).success).toBe(true);
+      expect(schema.safeParse({ projectId: 'pr-test', sort: 'created_at' }).success).toBe(false);
     });
 
     it('should validate maxFieldLength as non-negative integer', () => {

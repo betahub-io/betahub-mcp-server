@@ -57,19 +57,29 @@ Add to your Claude Desktop configuration file:
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Linux: `~/.config/claude/claude_desktop_config.json`
 
+Claude Desktop's config file only runs local servers, so it reaches the hosted endpoint through the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) bridge (requires Node.js 18+):
+
 ```json
 {
   "mcpServers": {
     "betahub": {
-      "type": "streamable-http",
-      "url": "https://mcp.betahub.io/",
-      "headers": {
-        "Authorization": "Bearer pat-your-token-here"
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.betahub.io/",
+        "--header",
+        "Authorization:${BETAHUB_AUTH}"
+      ],
+      "env": {
+        "BETAHUB_AUTH": "Bearer pat-your-token-here"
       }
     }
   }
 }
 ```
+
+Keep the token in `env`: on Windows, a token written directly into `args` breaks at the space after `Bearer`.
 
 ### Generic MCP Client
 
