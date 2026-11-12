@@ -18,6 +18,8 @@ describe('issueFormatter', () => {
       expect(ISSUE_FIELDS).toContain('created_at');
       expect(ISSUE_FIELDS).toContain('updated_at');
       expect(ISSUE_FIELDS).toContain('url');
+      expect(ISSUE_FIELDS).toContain('heat');
+      expect(ISSUE_FIELDS).toContain('peak_heat');
     });
 
     it('should not contain token field', () => {

@@ -92,6 +92,9 @@ export interface Issue {
   };
   potential_duplicate?: any;
   url: string;
+  // How much attention the bug needs now; compare only within one project.
+  heat?: number;
+  peak_heat?: number | null;
   token?: string;
 }
 

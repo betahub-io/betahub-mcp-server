@@ -6,7 +6,12 @@ import { z } from 'zod';
 import { getApiClient, type BetaHubApiClient } from '../api/client.js';
 import { NotFoundError, AccessDeniedError, ApiError } from '../errors.js';
 import type { IssuesResponse } from '../types/betahub.js';
-import type { ListIssuesInput, ToolResponse } from '../types/mcp.js';
+import {
+  DEFAULT_ISSUE_LIST_SORT,
+  ISSUE_LIST_SORTS,
+  type ListIssuesInput,
+  type ToolResponse,
+} from '../types/mcp.js';
 import { formatIssues, ISSUE_FIELDS, type IssueField } from './issueFormatter.js';
 
 export const listIssuesInputSchema = {
@@ -59,6 +64,14 @@ export const listIssuesInputSchema = {
     .string()
     .optional()
     .describe('Filter issues by tag IDs (comma-separated, e.g., "1,2,3"). Only issues with at least one of these tags will be returned. Use the listIssueTags tool to discover available tag IDs for a project.'),
+  sort: z
+    .enum(ISSUE_LIST_SORTS)
+    .optional()
+    .describe(
+      'Order of the list. "id" (default): oldest first, every bug exactly once across pages. ' +
+      '"heat": the bugs that need attention most first (heat grows with affected players, recent ' +
+      'engagement, priority and recency; recalculated periodically, so bugs can move between pages).'
+    ),
   fields: z
     .array(z.enum(ISSUE_FIELDS as unknown as [string, ...string[]]))
     .optional()
@@ -89,6 +102,7 @@ export async function listIssues({
   updatedAfter,
   updatedBefore,
   tagIds,
+  sort = DEFAULT_ISSUE_LIST_SORT,
   fields,
   maxFieldLength,
 }: ListIssuesInput, apiClient?: BetaHubApiClient): Promise<ToolResponse> {
@@ -105,6 +119,7 @@ export async function listIssues({
     if (updatedAfter) params.append('updated_after', updatedAfter);
     if (updatedBefore) params.append('updated_before', updatedBefore);
     if (tagIds) params.append('tag_ids', tagIds);
+    if (sort !== DEFAULT_ISSUE_LIST_SORT) params.append('sort', sort);
 
     const queryString = params.toString();
     const endpoint = `projects/${projectId}/issues.json${
@@ -138,6 +153,7 @@ export async function listIssues({
               updated_after: updatedAfter,
               updated_before: updatedBefore,
               tag_ids: tagIds,
+              sort,
             },
             project_id: projectId,
           },
