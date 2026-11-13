@@ -5,7 +5,8 @@
  * account's other sessions only a small share of requests. To tell sessions apart, this server
  * names each MCP session on `initialize` (`mcp-session-id`, which clients send back on every
  * request) and forwards the name to the backend as `X-Agent-Session`. Stateless: the name is
- * random and nothing is stored here.
+ * random and nothing is stored here. A self-hosted server (stdio) is one session for as long as
+ * its process runs, so the backend treats it like the hosted one (cap, drafts, "via", W13 and W15).
  */
 import { randomUUID } from 'node:crypto';
 
@@ -28,3 +29,6 @@ export function agentSessionFor(body: unknown, headers: Record<string, string | 
   const sent = Object.entries(headers).find(([name]) => name.toLowerCase() === MCP_SESSION_HEADER)?.[1];
   return typeof sent === 'string' && SESSION_ID.test(sent) ? sent : undefined;
 }
+
+/** The session of a self-hosted server: one per process. */
+export const PROCESS_AGENT_SESSION = randomUUID();

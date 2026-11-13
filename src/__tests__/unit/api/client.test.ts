@@ -367,6 +367,26 @@ describe('API Client', () => {
         const callArgs = (global.fetch as any).mock.calls[0];
         expect(callArgs[1].headers['Authorization']).toContain('pat-');
       });
+
+      // A self-hosted server (stdio) is one session for as long as its process runs, so the backend
+      // applies the hosted server's limits to it too (backend docs/design/agent_write_access.md, W13, W15).
+      it("names the process's session on every call, the same one each time", async () => {
+        vi.spyOn(authModule, 'getAuthConfig').mockReturnValue({
+          token: 'pat-from-auth',
+          tokenType: 'personal_access_token'
+        });
+        global.fetch = mockFetch([
+          { ok: true, json: () => Promise.resolve({}) },
+          { ok: true, json: () => Promise.resolve({}) }
+        ]);
+
+        await getApiClient().get('first');
+        await getApiClient().get('second');
+
+        const sessions = (global.fetch as any).mock.calls.map((call: any[]) => call[1].headers['X-Agent-Session']);
+        expect(sessions[0]).toMatch(/^[0-9a-f-]{36}$/);
+        expect(sessions[1]).toBe(sessions[0]);
+      });
     });
 
     describe('createApiClient', () => {

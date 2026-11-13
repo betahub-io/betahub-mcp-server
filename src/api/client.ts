@@ -6,7 +6,7 @@ import { config, getApiUrl } from '../config.js';
 import { agentHint } from './agentHint.js';
 import { ApiError, AuthenticationError } from '../errors.js';
 import { formatAuthHeader, getAuthConfig } from '../lib/auth.js';
-import { BACKEND_SESSION_HEADER } from '../lib/agentSession.js';
+import { BACKEND_SESSION_HEADER, PROCESS_AGENT_SESSION } from '../lib/agentSession.js';
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -105,10 +105,11 @@ async function readErrorBody(response: Response): Promise<{ serverMessage?: stri
 
 let defaultClient: BetaHubApiClient | null = null;
 
+/** The self-hosted server's client (stdio): the token it started with, its process's session. */
 export function getApiClient(): BetaHubApiClient {
   if (!defaultClient) {
     const authConfig = getAuthConfig();
-    defaultClient = new BetaHubApiClient(authConfig.token);
+    defaultClient = new BetaHubApiClient(authConfig.token, PROCESS_AGENT_SESSION);
   }
   return defaultClient;
 }
