@@ -457,3 +457,30 @@ export interface SteamThreadsResponse {
   threads: SteamThread[];
   pagination: Pagination;
 }
+
+// A Discord form (BetaHub backend docs/api/components/schemas/discord_form.yaml).
+export interface DiscordFormStep {
+  key: string;
+  type: 'single' | 'multi' | 'short' | 'long';
+  title: string;
+  custom_field_id?: number;
+  custom_field_ident?: string;
+  [extra: string]: unknown;
+}
+
+export interface DiscordForm {
+  id: number;
+  slug: string;
+  kind: 'bug' | 'suggestion' | 'ticket';
+  name: string;
+  enabled: boolean;
+  intro_message: string | null;
+  dedup_enabled: boolean;
+  url: string;
+  default_form_setting: string;
+  field_config?: { steps?: DiscordFormStep[] };
+}
+
+export interface DiscordFormsResponse {
+  forms: DiscordForm[];
+}

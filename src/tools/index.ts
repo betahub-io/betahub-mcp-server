@@ -33,6 +33,11 @@ import {
   unmarkDuplicate, unmarkDuplicateDefinition, unmarkDuplicateInputSchema,
 } from './duplicateSuggestion.js';
 import { bulkUpdateIssues, bulkUpdateIssuesDefinition, bulkUpdateIssuesInputSchema } from './bulkUpdateIssues.js';
+import {
+  listDiscordForms, listDiscordFormsDefinition, listDiscordFormsInputSchema,
+  createDiscordForm, createDiscordFormDefinition, createDiscordFormInputSchema,
+  updateDiscordForm, updateDiscordFormDefinition, updateDiscordFormInputSchema,
+} from './discordForms.js';
 import { setSuggestionStatus, setSuggestionStatusDefinition, setSuggestionStatusInputSchema } from './suggestionStatus.js';
 import { moderateSuggestion, moderateSuggestionDefinition, moderateSuggestionInputSchema } from './moderateSuggestion.js';
 import {
@@ -185,6 +190,21 @@ export const tools = {
     handler: undoMergeSuggestions,
     inputSchema: undoMergeSuggestionsInputSchema,
   },
+  listDiscordForms: {
+    definition: listDiscordFormsDefinition,
+    handler: listDiscordForms,
+    inputSchema: listDiscordFormsInputSchema,
+  },
+  createDiscordForm: {
+    definition: createDiscordFormDefinition,
+    handler: createDiscordForm,
+    inputSchema: createDiscordFormInputSchema,
+  },
+  updateDiscordForm: {
+    definition: updateDiscordFormDefinition,
+    handler: updateDiscordForm,
+    inputSchema: updateDiscordFormInputSchema,
+  },
 };
 
 export {
@@ -193,4 +213,5 @@ export {
   listSentimentInsights, listSentimentTopics, listSentimentMessages, getSteamScanner, listSteamThreads,
   updateIssue, archiveIssue, unarchiveIssue, mergeIssues, undoMergeIssues, resolveDuplicateSuggestion,
   unmarkDuplicate, bulkUpdateIssues, setSuggestionStatus, moderateSuggestion, mergeSuggestions, undoMergeSuggestions,
+  listDiscordForms, createDiscordForm, updateDiscordForm,
 };

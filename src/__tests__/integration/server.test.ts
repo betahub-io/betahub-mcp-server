@@ -16,6 +16,7 @@ const WRITE_TOOLS = [
   'updateIssue', 'archiveIssue', 'unarchiveIssue', 'mergeIssues', 'undoMergeIssues',
   'resolveDuplicateSuggestion', 'unmarkDuplicate', 'bulkUpdateIssues',
   'setSuggestionStatus', 'moderateSuggestion', 'mergeSuggestions', 'undoMergeSuggestions',
+  'createDiscordForm', 'updateDiscordForm',
 ];
 
 describe('MCP Server Integration', () => {

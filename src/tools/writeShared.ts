@@ -137,3 +137,10 @@ export function suggestionPath(projectId: string, suggestionId: string, action?:
 export function suggestionNotFound(projectId: string, suggestionId: string): string {
   return `Suggestion ${suggestionId} not found in project ${projectId}`;
 }
+
+// --- Discord forms --------------------------------------------------------------------------
+
+export function discordFormsPath(projectId: string, formId?: number): string {
+  const path = `projects/${pathSegment(projectId)}/discord/forms`;
+  return formId === undefined ? `${path}.json` : `${path}/${formId}.json`;
+}
