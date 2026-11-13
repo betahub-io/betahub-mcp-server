@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { listSuggestions, listSuggestionsDefinition, listSuggestionsInputSchema } from '../../../tools/suggestions.js';
 import * as apiClient from '../../../api/client.js';
-import { NotFoundError, AccessDeniedError, ApiError } from '../../../errors.js';
+import { NotFoundError, AccessDeniedError, ApiError, ValidationError } from '../../../errors.js';
 import { createFeatureRequestsResponse } from '../../helpers/factories.js';
 import { z } from 'zod';
 
@@ -34,6 +34,18 @@ describe('Suggestions Tool', () => {
 
       expect(() => schema.parse({})).toThrow();
       expect(() => schema.parse({ projectId: 'pr-123' })).not.toThrow();
+    });
+
+    // The backend's statuses; it ignores anything else and answers the unfiltered list.
+    it('takes the backend\'s suggestion statuses', () => {
+      const schema = z.object(listSuggestionsInputSchema);
+
+      for (const status of ['open', 'under_review', 'planned', 'started', 'completed', 'declined', 'duplicate']) {
+        expect(() => schema.parse({ projectId: 'pr-123', status }), status).not.toThrow();
+      }
+      for (const status of ['pending', 'approved', 'in_progress']) {
+        expect(() => schema.parse({ projectId: 'pr-123', status }), status).toThrow();
+      }
     });
 
     it('should validate sort enum values', () => {
@@ -68,6 +80,52 @@ describe('Suggestions Tool', () => {
       expect(parsed.feature_requests).toHaveLength(5);
       expect(parsed.sort).toBe('top');
       expect(parsed.project_id).toBe('pr-test-123');
+    });
+
+    // The backend applies status only on sort=all.
+    it('filters by status through sort=all', async () => {
+      mockClient.get.mockResolvedValue(createFeatureRequestsResponse(1));
+
+      const parsed = JSON.parse((await listSuggestions({ projectId: 'pr-test', status: 'planned' })).content[0].text);
+
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/feature_requests.json?sort=all&status=planned');
+      expect(parsed.sort).toBe('all');
+    });
+
+    it('accepts status with an explicit sort=all', async () => {
+      mockClient.get.mockResolvedValue(createFeatureRequestsResponse(1));
+
+      await listSuggestions({ projectId: 'pr-test', sort: 'all', status: 'declined' });
+
+      expect(mockClient.get).toHaveBeenCalledWith('projects/pr-test/feature_requests.json?sort=all&status=declined');
+    });
+
+    // The backend narrows every list by status (apply_filters_to_feature_requests).
+    it.each([
+      ['top', 'projects/pr-test/feature_requests.json?status=planned'],
+      ['new', 'projects/pr-test/feature_requests.json?sort=new&status=planned'],
+    ] as const)('narrows sort %s by status', async (sort, endpoint) => {
+      mockClient.get.mockResolvedValue(createFeatureRequestsResponse(1));
+
+      await listSuggestions({ projectId: 'pr-test', sort, status: 'planned' });
+
+      expect(mockClient.get).toHaveBeenCalledWith(endpoint);
+    });
+
+    // A queue sort holds only its own status, so any status filter would answer an empty list.
+    it.each(['moderation', 'rejected', 'muted', 'duplicates'] as const)(
+      'refuses status with the %s list',
+      async (sort) => {
+        await expect(listSuggestions({ projectId: 'pr-test', sort, status: 'planned' }))
+          .rejects.toThrow(ValidationError);
+        expect(mockClient.get).not.toHaveBeenCalled();
+      }
+    );
+
+    it('says how status and sort work together', () => {
+      expect(listSuggestionsInputSchema.status.description).toContain('sort "all"');
+      expect(listSuggestionsInputSchema.status.description).toContain('"moderation"');
+      expect(listSuggestionsInputSchema.sort.description).toContain('"moderation"');
     });
 
     it('should fetch suggestions with custom sort', async () => {
@@ -164,6 +222,17 @@ describe('Suggestions Tool', () => {
       expect(parsed.feature_requests[0].voted).toBe(true);
       expect(parsed.feature_requests[0].is_duplicate).toBe(true);
       expect(parsed.feature_requests[0].duplicates_count).toBe(3);
+    });
+
+    // The write tools take a suggestion's scoped id, so the list has to give it.
+    it('returns each suggestion\'s scoped_id', async () => {
+      const response = createFeatureRequestsResponse(1);
+      response.feature_requests[0] = { ...response.feature_requests[0], scoped_id: '12' };
+      mockClient.get.mockResolvedValue(response);
+
+      const parsed = JSON.parse((await listSuggestions({ projectId: 'pr-test', sort: 'moderation' })).content[0].text);
+
+      expect(parsed.feature_requests[0].scoped_id).toBe('12');
     });
 
     it('should handle empty feature requests', async () => {

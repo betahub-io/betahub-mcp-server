@@ -3,20 +3,25 @@
  */
 
 import { config, getApiUrl } from '../config.js';
+import { agentHint } from './agentHint.js';
 import { ApiError, AuthenticationError } from '../errors.js';
 import { formatAuthHeader, getAuthConfig } from '../lib/auth.js';
+import { BACKEND_SESSION_HEADER } from '../lib/agentSession.js';
 
 export interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: any;
   headers?: Record<string, string>;
 }
 
 export class BetaHubApiClient {
   private token: string;
+  private agentSession?: string;
 
-  constructor(token?: string) {
+  /** `agentSession`: the MCP session the call comes from, so the backend can tell sessions apart. */
+  constructor(token?: string, agentSession?: string) {
     this.token = token || getAuthConfig().token;
+    this.agentSession = agentSession;
   }
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -25,6 +30,7 @@ export class BetaHubApiClient {
     const headers: Record<string, string> = {
       'User-Agent': config.api.userAgent,
       'Authorization': formatAuthHeader(this.token),
+      ...(this.agentSession ? { [BACKEND_SESSION_HEADER]: this.agentSession } : {}),
       ...options.headers,
     };
 
@@ -40,11 +46,13 @@ export class BetaHubApiClient {
       });
 
       if (!response.ok) {
+        const { serverMessage, hint } = await readErrorBody(response);
         throw new ApiError(
           `API request failed: ${response.statusText}`,
           response.status,
           endpoint,
-          await readServerMessage(response)
+          serverMessage,
+          hint
         );
       }
 
@@ -78,16 +86,20 @@ export class BetaHubApiClient {
   async post<T>(endpoint: string, body?: any): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body });
   }
+
+  async patch<T>(endpoint: string, body?: any): Promise<T> {
+    return this.request<T>(endpoint, { method: 'PATCH', body });
+  }
 }
 
 // Error bodies are best effort: a proxy or crash page is not JSON, and that must not mask the status.
-async function readServerMessage(response: Response): Promise<string | undefined> {
+async function readErrorBody(response: Response): Promise<{ serverMessage?: string; hint?: string }> {
   try {
     const body: unknown = await response.json();
     const message = (body as { error?: unknown } | null)?.error;
-    return typeof message === 'string' ? message : undefined;
+    return { serverMessage: typeof message === 'string' ? message : undefined, hint: agentHint(body) };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -101,6 +113,6 @@ export function getApiClient(): BetaHubApiClient {
   return defaultClient;
 }
 
-export function createApiClient(token: string): BetaHubApiClient {
-  return new BetaHubApiClient(token);
+export function createApiClient(token: string, agentSession?: string): BetaHubApiClient {
+  return new BetaHubApiClient(token, agentSession);
 }

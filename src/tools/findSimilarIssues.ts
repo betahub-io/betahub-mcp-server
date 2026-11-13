@@ -112,7 +112,8 @@ export async function findSimilarIssues({
         // a token whose user lacks that role gets 403 even though list/search work.
         throw new AccessDeniedError(
           'find similar issues (requires developer-level access) for',
-          issueId
+          issueId,
+          error.hint
         );
       }
     }

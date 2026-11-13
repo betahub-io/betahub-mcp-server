@@ -119,6 +119,14 @@ describe('Sentiment tools', () => {
         .rejects.toThrow(/plan does not include Sentiment Analysis.*project\.analytics\.view/s);
     });
 
+    it('passes on what the backend tells the agent to do', async () => {
+      client.get.mockRejectedValue(new ApiError('API request failed: Unauthorized', 401, 'x', 'token_expired',
+        'Connect again: follow https://app.betahub.io/agents/setup.md.'));
+
+      await expect(getSentimentOverview({ projectId: 'pr-1' }, client as any))
+        .rejects.toThrow('Connect again: follow https://app.betahub.io/agents/setup.md.');
+    });
+
     it('explains an invalid filter', async () => {
       client.get.mockRejectedValue(new ApiError('API request failed: Bad Request', 400, 'x'));
 

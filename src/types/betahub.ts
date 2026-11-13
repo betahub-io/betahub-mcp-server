@@ -21,9 +21,11 @@ export interface Project {
 
 export interface FeatureRequest {
   id: string;
+  scoped_id?: string;
   title: string;
   description?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'completed' | 'duplicate';
+  status: 'open' | 'under_review' | 'planned' | 'started' | 'completed' | 'declined' | 'pending_moderation'
+    | 'rejected' | 'muted' | 'duplicate' | 'split' | 'hidden';
   votes: number;
   voted?: boolean;
   is_duplicate?: boolean;
@@ -73,8 +75,9 @@ export interface Issue {
   scoped_id?: string;
   title: string;
   description: string;
-  status: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'in_progress' | 'needs_more_info' | 'resolved' | 'closed' | 'wont_fix' | 'duplicate'
+    | 'pending_moderation';
+  priority: 'low' | 'medium' | 'high' | 'critical' | 'blocker';
   created_at: string;
   updated_at: string;
   // The API serializes the issue's own score column as a decimal string (e.g. "0.78").
@@ -90,12 +93,60 @@ export interface Issue {
     id: string;
     name: string;
   };
+  // The other bug, nested whole: set on a duplicate and on a possible one (pending_moderation).
   potential_duplicate?: any;
   url: string;
   // How much attention the bug needs now; compare only within one project.
   heat?: number;
   peak_heat?: number | null;
   token?: string;
+}
+
+// A changed bug as the backend answers it: the bug's JSON, which also carries its custom field values.
+export interface UpdatedIssue extends Issue {
+  custom_fields: Array<{ id: number; ident: string; name: string; field_type: string; value: unknown }>;
+}
+
+// Ids are the bugs' scoped ids ("74", or "g-123" for a bug without one).
+export interface IssuesMergedResponse {
+  issue: string;
+  merged_issue: string;
+  undo: { merged_issue_id: string; previous_status: string };
+}
+
+// When the target is closed (or resolved, where the project counts that as fixed), BetaHub links the other
+// bug as a regression of it instead: the other bug stays open and there is nothing to undo.
+export interface IssueRegressionResponse {
+  issue: string;
+  regression: string;
+}
+
+export type MergeIssuesResponse = IssuesMergedResponse | IssueRegressionResponse;
+
+export interface UndoMergeIssuesResponse {
+  issue: string;
+  status: string;
+}
+
+export interface ArchiveIssueResponse {
+  success: boolean;
+}
+
+export interface BulkUpdateIssuesResponse {
+  message: string;
+  updated_count: number;
+}
+
+// Ids are the suggestions' scoped ids ("12", or "g-34" for one without).
+export interface MergeSuggestionsResponse {
+  suggestion: string;
+  merged_suggestion: string;
+  undo: { merged_feature_request_id: string; previous_status: string };
+}
+
+export interface UndoMergeSuggestionsResponse {
+  suggestion: string;
+  status: string;
 }
 
 export interface IssuesResponse {

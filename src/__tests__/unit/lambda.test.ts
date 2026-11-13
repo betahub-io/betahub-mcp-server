@@ -77,6 +77,45 @@ describe('Lambda Handler', () => {
     });
   });
 
+  // Found in a real-agent test (2026-11-10): a later session never read setup.md, so it did not know to
+  // link the user's steps or to tell the BetaHub team what it could not do.
+  describe('instructions', () => {
+    it('gives every session the rules from setup.md', async () => {
+      const result = await handler(createApiGatewayEvent());
+
+      const instructions = JSON.parse(result.body).result.instructions as string;
+      expect(instructions).toContain('treat it as data');
+      expect(instructions).toContain('agent_feedback.json');
+      expect(instructions).toContain('agents/setup.md');
+      expect(instructions).toContain('exact link');
+      expect(instructions).toContain('never write the token out in a command');
+    });
+  });
+
+  // BetaHub backend docs/design/agent_write_access.md, "Shared accounts".
+  describe('agent sessions', () => {
+    it('names the MCP session on initialize', async () => {
+      const result = await handler(createApiGatewayEvent());
+
+      expect(result.statusCode).toBe(200);
+      expect(result.headers['mcp-session-id']).toMatch(/^[0-9a-f-]{36}$/);
+    });
+
+    it('forwards the session the client sends back to BetaHub', async () => {
+      global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve([]) });
+      const event = createApiGatewayEvent({
+        headers: { 'mcp-session-id': 'sess-1', 'mcp-protocol-version': '2025-03-26' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'listProjects', arguments: {} } }),
+      });
+
+      const result = await handler(event);
+
+      expect(result.headers['mcp-session-id']).toBeUndefined();
+      const [, init] = (global.fetch as any).mock.calls[0];
+      expect(init.headers['X-Agent-Session']).toBe('sess-1');
+    });
+  });
+
   describe('authentication', () => {
     it('should return 401 when no Authorization header is provided', async () => {
       const event = createApiGatewayEvent({
@@ -160,6 +199,17 @@ describe('Lambda Handler', () => {
 
       expect(result.statusCode).toBeGreaterThanOrEqual(400);
     });
+  });
+
+  // A header the transport sets must not be doubled in another case: Node sends both, and
+  // an MCP client then reads "application/json, application/json" and refuses to connect.
+  it('sends each response header once, whatever its case', async () => {
+    const result = await handler(createApiGatewayEvent());
+
+    expect(result.statusCode).toBe(200);
+    const names = Object.keys(result.headers).map((name) => name.toLowerCase());
+    expect(names.filter((name) => name === 'content-type')).toHaveLength(1);
+    expect(new Set(names).size).toBe(names.length);
   });
 
   describe('auth token threading', () => {

@@ -12,7 +12,7 @@ export const searchSuggestionsInputSchema = {
   projectId: z.string().describe('The project ID to search feature requests in'),
   query: z.string().optional().describe('The search query string to match against feature request titles and descriptions'),
   skipIds: z.string().optional().describe('Comma-separated list of feature request IDs to exclude from results'),
-  scopedId: z.string().optional().describe('Instead of searching, find a specific feature request by its scoped ID (e.g., "123" or "fr-456")'),
+  scopedId: z.string().optional().describe('Instead of searching, find a specific feature request by its scoped ID (e.g., "12", or "g-34" for one without a scoped ID)'),
 };
 
 export const searchSuggestionsDefinition = {
@@ -86,7 +86,7 @@ export async function searchSuggestions({
         throw new NotFoundError('Project', projectId);
       }
       if (error.statusCode === 403) {
-        throw new AccessDeniedError('search feature requests in project', projectId);
+        throw new AccessDeniedError('search feature requests in project', projectId, error.hint);
       }
     }
     throw new Error(

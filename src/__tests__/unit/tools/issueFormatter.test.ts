@@ -71,25 +71,29 @@ describe('issueFormatter', () => {
       expect(result[0].steps_to_reproduce[2].step).toBe('Another short step');
     });
 
-    it('should truncate stringified potential_duplicate when it exceeds maxFieldLength', () => {
-      const bigDuplicate = { id: 'dup-1', title: 'Dup', description: 'C'.repeat(500) };
-      const issues = [createIssue({ potential_duplicate: bigDuplicate })];
+    // The backend nests the whole other bug (attachments included); the agent needs to know which bug it is.
+    it('keeps potential_duplicate as the other bug\'s id, scoped_id, title, status and url', () => {
+      const original = {
+        id: 100471, scoped_id: '74', title: 'Crash on the boss door', status: 'open',
+        url: 'https://app.betahub.io/projects/pr-1/issues/74',
+        description: 'C'.repeat(500), screenshots: [{ url: 'https://cdn.example/shot.png' }],
+      };
+      const issues = [createIssue({ potential_duplicate: original })];
 
       const result = formatIssues(issues);
 
-      expect(typeof result[0].potential_duplicate).toBe('string');
-      expect((result[0].potential_duplicate as string).length).toBeLessThanOrEqual(303);
-      expect((result[0].potential_duplicate as string).endsWith('...')).toBe(true);
+      expect(result[0].potential_duplicate).toEqual({
+        id: 100471, scoped_id: '74', title: 'Crash on the boss door', status: 'open',
+        url: 'https://app.betahub.io/projects/pr-1/issues/74',
+      });
     });
 
-    it('should preserve potential_duplicate as object when it fits within maxFieldLength', () => {
-      const smallDuplicate = { id: 'dup-1', title: 'Small' };
-      const issues = [createIssue({ potential_duplicate: smallDuplicate })];
+    it('truncates a long potential_duplicate title with maxFieldLength', () => {
+      const issues = [createIssue({ potential_duplicate: { id: 1, scoped_id: '7', title: 'T'.repeat(50) } })];
 
-      const result = formatIssues(issues);
+      const result = formatIssues(issues, { maxFieldLength: 10 });
 
-      expect(typeof result[0].potential_duplicate).toBe('object');
-      expect(result[0].potential_duplicate).toEqual(smallDuplicate);
+      expect((result[0].potential_duplicate as { title: string }).title).toBe(`${'T'.repeat(10)}...`);
     });
 
     it('should not truncate when maxFieldLength is 0', () => {

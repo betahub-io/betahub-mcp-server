@@ -21,7 +21,7 @@ const MAX_FILTER_TEXT_LENGTH = 100;
 const MAX_ROLE_NAMES = 50;
 
 // The backend's generic 404 body, as opposed to a specific explanation such as "not connected".
-const GENERIC_NOT_FOUND = 'Not found';
+export const GENERIC_NOT_FOUND = 'Not found';
 
 export const COMMUNITY_ACCESS_REQUIREMENTS =
   'Sentiments and Steam discussions need a Personal Access Token (pat-) whose user has the ' +
@@ -126,22 +126,22 @@ export function toCommunityToolError(error: unknown, action: string, notFound: s
         return new ApiError(
           `Failed to ${action}: a filter value is not valid for this project (unknown channel id or role name, ` +
           'or an over-long word). getSentimentOverview lists the valid channels.',
-          400, error.endpoint, detail
+          400, error.endpoint, detail, error.hint
         );
       case 401:
         return new ApiError(
           `Failed to ${action}: the token was not accepted. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
-          401, error.endpoint, detail
+          401, error.endpoint, detail, error.hint
         );
       case 403:
         return new ApiError(
           `Failed to ${action}: access denied${detail ? ` (${detail})` : ''}. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
-          403, error.endpoint, detail
+          403, error.endpoint, detail, error.hint
         );
       case 404:
         return new ApiError(
           detail && detail !== GENERIC_NOT_FOUND ? detail : notFound,
-          404, error.endpoint, detail
+          404, error.endpoint, detail, error.hint
         );
     }
   }

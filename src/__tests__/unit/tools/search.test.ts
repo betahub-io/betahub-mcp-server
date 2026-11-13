@@ -45,6 +45,9 @@ describe('Search Tool', () => {
       const schema = z.object(searchSuggestionsInputSchema);
 
       expect(() => schema.parse({ projectId: 'pr-123', scopedId: 'fr-456' })).not.toThrow();
+      // BetaHub finds a suggestion by its scoped id or by "g-<id>"; there is no "fr-" form.
+      expect(searchSuggestionsInputSchema.scopedId.description).toContain('"g-34"');
+      expect(searchSuggestionsInputSchema.scopedId.description).not.toContain('fr-');
     });
 
   });

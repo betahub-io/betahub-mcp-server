@@ -20,6 +20,19 @@ function truncateString(value: string, maxLength: number): string {
   return value.slice(0, maxLength) + '...';
 }
 
+// The backend nests the whole other bug (attachments included); which bug it is is what the agent needs.
+const DUPLICATE_OF_FIELDS = ['id', 'scoped_id', 'title', 'status', 'url'] as const;
+
+function summarizeDuplicateOf(original: Record<string, unknown>, maxLength: number): Record<string, unknown> {
+  const summary: Record<string, unknown> = {};
+  for (const field of DUPLICATE_OF_FIELDS) {
+    if (original[field] === undefined) continue;
+    const value = original[field];
+    summary[field] = field === 'title' && typeof value === 'string' ? truncateString(value, maxLength) : value;
+  }
+  return summary;
+}
+
 export function formatIssues(
   issues: Issue[],
   options?: FormatOptions,
@@ -39,13 +52,8 @@ export function formatIssues(
         result[field] = value.map((s: { step: string }) => ({
           step: truncateString(s.step, maxLen),
         }));
-      } else if (field === 'potential_duplicate' && value != null && maxLen > 0) {
-        const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-        if (serialized.length > maxLen) {
-          result[field] = truncateString(serialized, maxLen);
-        } else {
-          result[field] = value;
-        }
+      } else if (field === 'potential_duplicate' && value != null) {
+        result[field] = summarizeDuplicateOf(value, maxLen);
       } else {
         result[field] = value;
       }

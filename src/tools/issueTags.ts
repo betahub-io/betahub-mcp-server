@@ -109,7 +109,7 @@ export async function listIssueTags({
         throw new NotFoundError('Project', projectId);
       }
       if (error.statusCode === 403) {
-        throw new AccessDeniedError('project', projectId);
+        throw new AccessDeniedError('project', projectId, error.hint);
       }
     }
     throw new Error(

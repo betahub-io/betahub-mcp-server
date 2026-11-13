@@ -233,7 +233,7 @@ export async function listIssueAttachments(
         throw new NotFoundError('Issue', issueId);
       }
       if (error.statusCode === 403) {
-        throw new AccessDeniedError('issue', issueId);
+        throw new AccessDeniedError('issue', issueId, error.hint);
       }
     }
 

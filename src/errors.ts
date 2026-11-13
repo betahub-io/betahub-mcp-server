@@ -19,10 +19,18 @@ export class AuthenticationError extends BetaHubError {
 export class ApiError extends BetaHubError {
   // serverMessage: the `error` field of a JSON error body, when the backend explains itself
   // (e.g. which plan feature is missing), as opposed to the bare HTTP status text in `message`.
-  constructor(message: string, public statusCode: number, public endpoint?: string, public serverMessage?: string) {
-    super(message, statusCode);
+  // hint: what the backend tells a coding agent to do next (see api/agentHint.ts); the message
+  // carries it, so every tool that reports `error.message` passes it on.
+  constructor(message: string, public statusCode: number, public endpoint?: string, public serverMessage?: string,
+              public hint?: string) {
+    super(hint ? joinSentences(message, hint) : message, statusCode);
     this.name = 'ApiError';
   }
+}
+
+// "Access denied." + "Missing access: x." without a doubled full stop.
+function joinSentences(first: string, second: string): string {
+  return /[.!?]$/.test(first) ? `${first} ${second}` : `${first}. ${second}`;
 }
 
 export class ValidationError extends BetaHubError {
@@ -41,9 +49,9 @@ export class NotFoundError extends ApiError {
 }
 
 export class AccessDeniedError extends ApiError {
-  constructor(resource: string, id?: string) {
+  constructor(resource: string, id?: string, hint?: string) {
     const message = id ? `Access denied to ${resource} ${id}` : `Access denied to ${resource}`;
-    super(message, 403);
+    super(message, 403, undefined, undefined, hint);
     this.name = 'AccessDeniedError';
   }
 }
