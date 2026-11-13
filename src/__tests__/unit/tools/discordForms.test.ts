@@ -120,6 +120,22 @@ describe('Discord form tools', () => {
     expect(result.warnings).toEqual([expect.stringContaining('Step "platform" does not save its answer in "platform"')]);
   });
 
+  // Found in a workspace test (2026-11-13): a created field takes the labels as its values.
+  it('does not warn when a step creates its field and the options take their labels as values', async () => {
+    const saved = formJson({ field_config: { steps: [
+      { key: 'platform', type: 'single', title: 'Which platform?', custom_field_id: 9, custom_field_ident: 'which_platform',
+        options: [{ value: 'PC', label: 'PC' }, { value: 'Console', label: 'Console' }] },
+      { key: 'details', type: 'long', title: 'What happened?', is_description: true },
+    ] } });
+    const { client } = clientAnswering(200, saved);
+
+    const result = parseResult(await createDiscordForm({
+      projectId: 'pr-1', kind: 'bug', name: 'Crash report', steps: [{ ...platform, createCustomField: true }, description],
+    }, client));
+
+    expect(result).not.toHaveProperty('warnings');
+  });
+
   it('passes BetaHub\'s reason on when a form cannot be saved', async () => {
     const { client } = clientAnswering(422, { error: 'The form must end with a description step.', errors: ['x'] });
 

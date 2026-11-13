@@ -258,10 +258,11 @@ function droppedFields(sent: StepInput[], saved: DiscordFormStep[]): string[] {
     if (step.createCustomField && !kept?.custom_field_id) {
       return [`Step "${step.key}" got no custom field: only a single step with options and no field can create one.`];
     }
-    // A step saved to a select field keeps only the options that use the field's values.
+    // A step saved to an existing select field keeps only the options that use the field's values. A field the
+    // step creates takes the options' labels as its values, so its options are not compared.
     const keptValues = new Set(((kept?.options as Array<{ value: string }> | undefined) ?? []).map((o) => o.value));
     const droppedOptions = (step.options ?? []).filter((option) => !keptValues.has(option.value)).map((o) => o.value);
-    if (kept && droppedOptions.length > 0) {
+    if (step.customFieldIdent && kept && droppedOptions.length > 0) {
       return [
         `Step "${step.key}" lost the options ${droppedOptions.map((value) => `"${value}"`).join(', ')}: ` +
         'its custom field does not have those values, so players cannot pick them.',
