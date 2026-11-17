@@ -18,7 +18,8 @@ export function confirmMany(things: 'bugs' | 'suggestions'): string {
   return `Confirm with the user before changing many ${things}.`;
 }
 
-// Not destructive: every one of these changes can be reversed (deleting is not offered).
+// Not destructive: these changes can be reversed (deleting is not offered). A tool that cannot be
+// undone, such as cancelSentimentCheck, overrides destructiveHint.
 export const WRITE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, openWorldHint: true } as const;
 
 export const projectIdField = z.string().min(1).describe('The project ID (e.g. "pr-123")');
@@ -143,4 +144,12 @@ export function suggestionNotFound(projectId: string, suggestionId: string): str
 export function discordFormsPath(projectId: string, formId?: number): string {
   const path = `projects/${pathSegment(projectId)}/discord/forms`;
   return formId === undefined ? `${path}.json` : `${path}/${formId}.json`;
+}
+
+// --- Sentiment checks -----------------------------------------------------------------------
+
+export function sentimentCheckPath(projectId: string, checkId?: string, action?: string): string {
+  const checks = `projects/${pathSegment(projectId)}/sentiments/checks`;
+  if (!checkId) return `${checks}.json`;
+  return action ? `${checks}/${pathSegment(checkId)}/${action}.json` : `${checks}/${pathSegment(checkId)}.json`;
 }

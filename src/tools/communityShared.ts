@@ -118,7 +118,12 @@ export function jsonResponse(payload: unknown): ToolResponse {
  * Turns a failed request into an error the agent can act on. `notFound` describes a bare 404;
  * a specific backend explanation (e.g. Steam not connected) wins over it.
  */
-export function toCommunityToolError(error: unknown, action: string, notFound: string): Error {
+export function toCommunityToolError(
+  error: unknown,
+  action: string,
+  notFound: string,
+  requirements: string = COMMUNITY_ACCESS_REQUIREMENTS
+): Error {
   if (error instanceof ApiError) {
     const detail = error.serverMessage;
     switch (error.statusCode) {
@@ -130,12 +135,12 @@ export function toCommunityToolError(error: unknown, action: string, notFound: s
         );
       case 401:
         return new ApiError(
-          `Failed to ${action}: the token was not accepted. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
+          `Failed to ${action}: the token was not accepted. ${requirements}`,
           401, error.endpoint, detail, error.hint
         );
       case 403:
         return new ApiError(
-          `Failed to ${action}: access denied${detail ? ` (${detail})` : ''}. ${COMMUNITY_ACCESS_REQUIREMENTS}`,
+          `Failed to ${action}: access denied${detail ? ` (${detail})` : ''}. ${requirements}`,
           403, error.endpoint, detail, error.hint
         );
       case 404:

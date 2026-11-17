@@ -223,6 +223,18 @@ All six are read-only and backed by JSON endpoints added to the backend for them
 15. **`getSteamScanner`** — connected game and status, activity counts by outcome over `range` (d1/d7/d30) or a custom `from`/`to`, waiting suggestions, per-forum counts (with each forum's `channel_value` for the sentiment filters), current and recent crawls. 404 "not connected" when no game is connected.
 16. **`listSteamThreads`** — threads newest first, 25 per page: title, Steam URL, forum, classification + reason, outcome, linked bug/suggestion. Filters: `forumId`, `classification`, `outcome`, `query`, `range` (d1/d7/d30/all, default d30).
 
+#### Sentiment check tools (17-23)
+
+Over the backend's sentiment check JSON (`projects/:id/sentiments/checks.json` and `.../checks/:id[/answer|confirm|revise|cancel].json`). A check is a question about a period of community sentiment (kinds `fix`, `release`, `campaign`); BetaHub's intake agent asks follow-up questions, proposes a plan, then runs the analysis. **Access:** `project.analytics.view`; reading and cancelling work on any plan, start/answer/confirm/revise need Pro or Enterprise. A coding agent token starts and steers checks with "Read and work" (key `sentiments.checks.run`, backend W23); a read-only one gets a 403 whose hint asks for it; `ops_durable` tokens only read. Reads map errors with `toCommunityToolError` + `SENTIMENT_CHECK_ACCESS_REQUIREMENTS`, actions with `toWriteError`; a 409/422 (the check moved on) adds "Call getSentimentCheck", and the limit's 429 (`sentiment_check_limit`) reaches the agent through its `message` hint.
+
+17. **`listSentimentChecks`** — checks newest first, 25 per page (`page`), each with `status`, `next_action` (`wait`, `answer`, `confirm_or_revise`, null when finished), verdict and page `url`, plus `limits` (`can_start`, open checks of 5, started in the last 24 hours of 20 with `next_slot_at`).
+18. **`getSentimentCheck`** — one check by `checkId` (`chk-…`, validated): `pending_questions`, `plan`, `progress`, `result` (quote `text` follows the project's privacy settings, null when the message is gone), `declined_reason`, `error`, `transcript`. Adds `next_step`: poll again while `wait`, otherwise which action tool to call (or the page for the user).
+19. **`startSentimentCheck`** — `question` (max 1000), optional `kind`. Not idempotent; each check uses AI time and counts toward the limits, so the agent confirms with the user first.
+20. **`answerSentimentCheck`** — `answers` keyed by `pending_questions` ids (text or list, max 500 each), optional `note`. Unknown ids are a 422.
+21. **`confirmSentimentCheck`** — runs the proposed plan; the analysis takes minutes.
+22. **`reviseSentimentCheck`** — `text`: what should change in the plan.
+23. **`cancelSentimentCheck`** — `destructiveHint: true` (cannot be undone), idempotent.
+
 ### Usage Examples
 
 #### Example 1: List all accessible projects
@@ -369,6 +381,13 @@ listSteamThreads({
   "classification": "bug",
   "range": "d7"
 })
+```
+
+#### Example 14: Did the fix land?
+```bash
+# Find the check, then read its verdict and report
+listSentimentChecks({ "projectId": "pr-0690627851" })
+getSentimentCheck({ "projectId": "pr-0690627851", "checkId": "chk-4818227359" })
 ```
 
 ### Testing the Server

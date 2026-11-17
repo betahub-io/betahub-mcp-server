@@ -17,6 +17,15 @@ import { getSentimentOverview, getSentimentOverviewDefinition, getSentimentOverv
 import { listSentimentInsights, listSentimentInsightsDefinition, listSentimentInsightsInputSchema } from './sentimentInsights.js';
 import { listSentimentTopics, listSentimentTopicsDefinition, listSentimentTopicsInputSchema } from './sentimentTopics.js';
 import { listSentimentMessages, listSentimentMessagesDefinition, listSentimentMessagesInputSchema } from './sentimentMessages.js';
+import { listSentimentChecks, listSentimentChecksDefinition, listSentimentChecksInputSchema } from './sentimentChecks.js';
+import { getSentimentCheck, getSentimentCheckDefinition, getSentimentCheckInputSchema } from './sentimentCheck.js';
+import {
+  answerSentimentCheck, answerSentimentCheckDefinition, answerSentimentCheckInputSchema,
+  cancelSentimentCheck, cancelSentimentCheckDefinition, cancelSentimentCheckInputSchema,
+  confirmSentimentCheck, confirmSentimentCheckDefinition, confirmSentimentCheckInputSchema,
+  reviseSentimentCheck, reviseSentimentCheckDefinition, reviseSentimentCheckInputSchema,
+  startSentimentCheck, startSentimentCheckDefinition, startSentimentCheckInputSchema,
+} from './sentimentCheckActions.js';
 import { getSteamScanner, getSteamScannerDefinition, getSteamScannerInputSchema } from './steamScanner.js';
 import { listSteamThreads, listSteamThreadsDefinition, listSteamThreadsInputSchema } from './steamThreads.js';
 import { updateIssue, updateIssueDefinition, updateIssueInputSchema } from './updateIssue.js';
@@ -120,6 +129,41 @@ export const tools = {
     handler: listSentimentMessages,
     inputSchema: listSentimentMessagesInputSchema,
   },
+  listSentimentChecks: {
+    definition: listSentimentChecksDefinition,
+    handler: listSentimentChecks,
+    inputSchema: listSentimentChecksInputSchema,
+  },
+  getSentimentCheck: {
+    definition: getSentimentCheckDefinition,
+    handler: getSentimentCheck,
+    inputSchema: getSentimentCheckInputSchema,
+  },
+  startSentimentCheck: {
+    definition: startSentimentCheckDefinition,
+    handler: startSentimentCheck,
+    inputSchema: startSentimentCheckInputSchema,
+  },
+  answerSentimentCheck: {
+    definition: answerSentimentCheckDefinition,
+    handler: answerSentimentCheck,
+    inputSchema: answerSentimentCheckInputSchema,
+  },
+  confirmSentimentCheck: {
+    definition: confirmSentimentCheckDefinition,
+    handler: confirmSentimentCheck,
+    inputSchema: confirmSentimentCheckInputSchema,
+  },
+  reviseSentimentCheck: {
+    definition: reviseSentimentCheckDefinition,
+    handler: reviseSentimentCheck,
+    inputSchema: reviseSentimentCheckInputSchema,
+  },
+  cancelSentimentCheck: {
+    definition: cancelSentimentCheckDefinition,
+    handler: cancelSentimentCheck,
+    inputSchema: cancelSentimentCheckInputSchema,
+  },
   getSteamScanner: {
     definition: getSteamScannerDefinition,
     handler: getSteamScanner,
@@ -210,8 +254,10 @@ export const tools = {
 export {
   listProjects, listSuggestions, searchSuggestions, listIssues, listIssueTags, searchIssues, listReleases,
   findSimilarIssues, listCustomFields, aggregateCustomField, listIssueAttachments, getSentimentOverview,
-  listSentimentInsights, listSentimentTopics, listSentimentMessages, getSteamScanner, listSteamThreads,
+  listSentimentInsights, listSentimentTopics, listSentimentMessages, listSentimentChecks, getSentimentCheck,
+  getSteamScanner, listSteamThreads,
   updateIssue, archiveIssue, unarchiveIssue, mergeIssues, undoMergeIssues, resolveDuplicateSuggestion,
   unmarkDuplicate, bulkUpdateIssues, setSuggestionStatus, moderateSuggestion, mergeSuggestions, undoMergeSuggestions,
   listDiscordForms, createDiscordForm, updateDiscordForm,
+  startSentimentCheck, answerSentimentCheck, confirmSentimentCheck, reviseSentimentCheck, cancelSentimentCheck,
 };

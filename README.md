@@ -19,6 +19,7 @@ The BetaHub MCP Server enables AI assistants to interact with BetaHub projects a
 - **Browse releases** - View project releases with download links
 - **Read community sentiment** - Overview, topics, AI insights and the scored Steam posts behind them (Pro/Enterprise)
 - **Browse Steam discussions** - The Steam scanner's status and the threads it turned into bugs and suggestions (Pro/Enterprise)
+- **Run sentiment checks** - Ask about a period of sentiment ("did the fix land?"), answer BetaHub's follow-up questions, read the verdict and report
 - **Filter by status** - Access requests and issues in various states (open, in_progress, resolved, etc.)
 - **Filter by priority** - View issues by priority level (low, medium, high, critical)
 - **Filter by tags** - Filter issues using tag IDs
@@ -240,6 +241,19 @@ fetch URLs (e.g. Claude Code) to actually save the files.
 These need a Personal Access Token whose user has the `project.analytics.view` permission
 (Developer role or organization admin) on a Pro or Enterprise plan; project tokens (`tkn-`)
 cannot read them. Only Steam posts are ever listed as messages — Discord messages stay private.
+
+### Sentiment Checks
+```
+"Did the grapple fix land? Check the latest sentiment checks."
+"What did the release report for 1.5 say?"
+"Is the sale recap done yet?"
+```
+
+Reading checks needs the same `project.analytics.view` permission, on any plan. Starting one
+("Ask BetaHub whether the grapple fix in 1.5 landed"), answering its follow-up questions and
+running or changing its plan also need a Pro or Enterprise plan; cancelling works on any. A coding
+agent's token needs "Read and work" to start or steer a check. Each check uses AI time: a project
+can have 5 open checks and start 20 in any 24 hours.
 
 ### Releases
 ```

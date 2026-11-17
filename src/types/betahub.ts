@@ -375,6 +375,59 @@ export interface SentimentMessagesResponse {
   pagination: Pagination;
 }
 
+// Sentiment checks (projects/:id/sentiments/checks.json, projects/:id/sentiments/checks/:id.json).
+export type SentimentCheckStatus =
+  'intake' | 'awaiting_input' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type SentimentCheckNextAction = 'wait' | 'answer' | 'confirm_or_revise';
+
+export interface SentimentCheckSummary {
+  id: string;
+  url: string;
+  title: string | null;
+  question: string;
+  kind: 'fix' | 'release' | 'campaign' | null;
+  status: SentimentCheckStatus;
+  next_action: SentimentCheckNextAction | null;
+  origin: 'user' | 'automatic';
+  verdict: string | null;
+  verdict_label: string | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export interface SentimentCheckQuestion {
+  id: string;
+  text: string;
+  type: 'text' | 'date' | 'single_choice' | 'multi_choice' | 'release';
+  why: string | null;
+  options: string[];
+  suggested_answer: string | null;
+}
+
+export interface SentimentCheck extends SentimentCheckSummary {
+  pending_questions: { intro: string | null; questions: SentimentCheckQuestion[] } | null;
+  plan: Record<string, unknown> | null;
+  progress: Array<{ name: string; label: string; status: 'pending' | 'running' | 'completed' | 'failed' }> | null;
+  result: Record<string, unknown> | null;
+  declined_reason: string | null;
+  error: string | null;
+  transcript: Array<Record<string, unknown>>;
+}
+
+export interface SentimentCheckLimits {
+  can_start: boolean;
+  feature_available: boolean;
+  open_checks: { count: number; max: number };
+  started_in_last_24_hours: { count: number; max: number; next_slot_at: string | null };
+}
+
+export interface SentimentChecksResponse {
+  checks: SentimentCheckSummary[];
+  limits: SentimentCheckLimits;
+  pagination: Pagination;
+}
+
 // Steam discussions scanner (projects/:id/steam.json, projects/:id/steam/threads.json).
 export interface SteamCrawlRun {
   id: number;

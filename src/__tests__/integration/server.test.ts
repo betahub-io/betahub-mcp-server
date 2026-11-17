@@ -17,7 +17,11 @@ const WRITE_TOOLS = [
   'resolveDuplicateSuggestion', 'unmarkDuplicate', 'bulkUpdateIssues',
   'setSuggestionStatus', 'moderateSuggestion', 'mergeSuggestions', 'undoMergeSuggestions',
   'createDiscordForm', 'updateDiscordForm',
+  'startSentimentCheck', 'answerSentimentCheck', 'confirmSentimentCheck', 'reviseSentimentCheck',
+  'cancelSentimentCheck',
 ];
+// Write tools whose change cannot be undone.
+const DESTRUCTIVE_WRITE_TOOLS = ['cancelSentimentCheck'];
 
 describe('MCP Server Integration', () => {
   beforeEach(() => {
@@ -47,13 +51,13 @@ describe('MCP Server Integration', () => {
       expect(server).toBeDefined();
     });
 
-    it('every registry tool declares annotations: reads are read-only, writes are reversible', () => {
+    it('every registry tool declares annotations: reads are read-only, writes are reversible or flagged', () => {
       for (const [name, tool] of Object.entries(tools)) {
         const annotations = (tool.definition as { annotations?: Record<string, unknown> }).annotations;
         expect(annotations, `${name} should declare annotations`).toBeDefined();
         if (WRITE_TOOLS.includes(name)) {
           expect(annotations, `${name} changes data`).toMatchObject({
-            readOnlyHint: false, destructiveHint: false, openWorldHint: true,
+            readOnlyHint: false, destructiveHint: DESTRUCTIVE_WRITE_TOOLS.includes(name), openWorldHint: true,
           });
         } else {
           expect(annotations?.readOnlyHint, `${name} should be marked read-only`).toBe(true);

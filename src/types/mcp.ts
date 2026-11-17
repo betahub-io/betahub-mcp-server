@@ -132,6 +132,33 @@ export interface ListSentimentMessagesInput extends SentimentFiltersInput {
   page?: number;
 }
 
+export interface ListSentimentChecksInput {
+  projectId: string;
+  page?: number;
+}
+
+export interface GetSentimentCheckInput {
+  projectId: string;
+  checkId: string;
+}
+
+export interface StartSentimentCheckInput {
+  projectId: string;
+  question: string;
+  kind?: 'fix' | 'release' | 'campaign';
+}
+
+export type SentimentCheckRefInput = GetSentimentCheckInput;
+
+export interface AnswerSentimentCheckInput extends SentimentCheckRefInput {
+  answers: Record<string, string | string[]>;
+  note?: string;
+}
+
+export interface ReviseSentimentCheckInput extends SentimentCheckRefInput {
+  text: string;
+}
+
 export interface GetSteamScannerInput {
   projectId: string;
   range?: 'd1' | 'd7' | 'd30';
