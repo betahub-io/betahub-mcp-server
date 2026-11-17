@@ -100,7 +100,8 @@ export const reviseSentimentCheckDefinition = {
   title: 'Change Sentiment Check Plan',
   description:
     'Send the plan BetaHub proposed for a check back with what should change (next_action "confirm_or_revise"). ' +
-    `BetaHub comes back with a new plan or more questions. ${VISIBLE}`,
+    'BetaHub comes back with a new plan or more questions. A plan takes at most 10 changes; then run it or cancel ' +
+    `the check. ${VISIBLE}`,
   inputSchema: reviseSentimentCheckInputSchema,
   annotations: { ...WRITE_ANNOTATIONS, idempotentHint: false },
 };
